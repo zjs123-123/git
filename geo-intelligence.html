@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>云岭村 · 地理智库</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: url('village-bg.png') center/cover no-repeat fixed;
+  color: #F0E8D8;
+  min-height: 100vh;
+  position: relative;
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.30);
+  z-index: 0; pointer-events: none;
+}
+
+/* ===== 顶部导航 ===== */
+.topbar {
+  background: rgba(20,12,6,0.88); border-bottom: 2px solid rgba(180,200,120,0.3);
+  padding: 16px 32px; display: flex; align-items: center; gap: 20px;
+  position: sticky; top:0; z-index:100;
+  backdrop-filter: blur(12px);
+}
+.topbar .logo {
+  font-size: 38px; font-weight: bold;
+  background: linear-gradient(135deg, #B8D880 0%, #7BA840 50%, #5A8A20 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.topbar .logo span { font-size: 22px; color: #98A878; margin-left: 12px; -webkit-text-fill-color: #98A878; }
+.topbar nav { margin-left: auto; display: flex; gap: 12px; }
+.topbar nav button {
+  background: rgba(30,40,18,0.7); border: 1px solid rgba(150,180,100,0.25); color: #B0C898;
+  padding: 12px 28px; border-radius: 10px; font-size: 22px; cursor: pointer;
+  font-family: inherit; transition: all .2s;
+  backdrop-filter: blur(6px);
+}
+.topbar nav button:hover, .topbar nav button.active {
+  background: rgba(50,70,20,0.85); border-color: rgba(160,200,80,0.5); color: #D8E8A0;
+  box-shadow: 0 0 20px rgba(140,180,60,0.15);
+}
+
+/* ===== 主容器 ===== */
+.main { max-width: 1060px; margin: 0 auto; padding: 28px 22px; position: relative; z-index: 1; }
+
+/* ===== 标题面板 ===== */
+.hero {
+  background: rgba(20,28,8,0.75); border: 1px solid rgba(160,190,100,0.2);
+  border-radius: 18px; padding: 32px 36px; margin-bottom: 22px;
+  backdrop-filter: blur(8px);
+}
+.hero h1 {
+  font-size: 44px;
+  background: linear-gradient(135deg, #C8E890 0%, #80B840 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.hero .hero-sub { font-size: 22px; color: #90A870; }
+
+/* ===== 数据总览卡片行 ===== */
+.overview-row {
+  display: flex; gap: 16px; margin-bottom: 22px;
+}
+.overview-card {
+  flex:1; background: rgba(20,28,8,0.72); border: 1px solid rgba(150,180,100,0.18);
+  border-radius: 16px; padding: 24px 20px; text-align: center;
+  backdrop-filter: blur(8px); transition: all .3s;
+}
+.overview-card:hover {
+  border-color: rgba(170,200,90,0.4);
+  box-shadow: 0 6px 24px rgba(140,180,60,0.12);
+}
+.overview-card .icon { font-size: 42px; margin-bottom: 10px; }
+.overview-card .value {
+  font-size: 36px; font-weight: bold;
+  background: linear-gradient(180deg, #C8E890 0%, #80B840 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.overview-card .label { font-size: 20px; color: #90A870; margin-top: 4px; }
+
+/* ===== 双栏布局 ===== */
+.content-row { display: flex; gap: 18px; margin-bottom: 22px; }
+.content-row .col { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+
+/* ===== 分析面板 ===== */
+.panel {
+  background: rgba(20,28,8,0.72); border: 1px solid rgba(150,180,100,0.18);
+  border-radius: 16px; padding: 24px; backdrop-filter: blur(8px);
+  transition: all .3s;
+}
+.panel:hover { border-color: rgba(170,200,90,0.3); }
+.panel h3 {
+  font-size: 28px; color: #B8D880;
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 1px solid rgba(150,180,100,0.18);
+  display: flex; align-items: center; gap: 10px;
+}
+.panel h3 .dot { width: 10px; height: 10px; border-radius: 50%; background: #90C840; }
+
+/* 指标列表 */
+.indicator-list { display: flex; flex-direction: column; gap: 10px; }
+.indicator-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; background: rgba(16,22,6,0.5);
+  border-radius: 10px; border-left: 3px solid rgba(150,200,80,0.3);
+}
+.indicator-badge {
+  width: 50px; height: 50px; border-radius: 12px;
+  background: rgba(60,90,20,0.5); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.indicator-info { flex:1; }
+.indicator-info .name { font-size: 22px; color: #D8E8B0; font-weight: bold; }
+.indicator-info .desc { font-size: 17px; color: #809068; }
+.indicator-value {
+  font-size: 28px; font-weight: bold; color: #B8D880;
+  text-align: right; flex-shrink: 0;
+}
+.indicator-value .unit { font-size: 16px; color: #80A060; }
+
+/* 标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  background: rgba(60,90,20,0.35); border: 1px solid rgba(150,200,80,0.2);
+  color: #B8D898; padding: 6px 16px; border-radius: 16px;
+  font-size: 18px;
+}
+
+/* 风险条 */
+.risk-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: rgba(16,22,6,0.5);
+  border-radius: 8px; margin-top: 4px;
+}
+.risk-bar .bar-fill {
+  height: 8px; border-radius: 4px; flex:1;
+  background: rgba(60,80,20,0.4); position: relative; overflow: hidden;
+}
+.risk-bar .bar-inner {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #90C840 0%, #E8C840 50%, #E87040 100%);
+}
+.risk-bar .risk-label { font-size: 18px; color: #B0C898; min-width: 80px; }
+.risk-bar .risk-level { font-size: 18px; font-weight: bold; }
+
+/* 地图区域 */
+.map-area {
+  width: 100%; height: 200px; border-radius: 12px;
+  background: rgba(12,18,4,0.5); border: 1px solid rgba(150,180,100,0.15);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px;
+  position: relative; overflow: hidden;
+}
+.map-area .terrain-icon { font-size: 60px; opacity: 0.6; }
+.map-area .terrain-label { font-size: 20px; color: #90A870; }
+
+/* SVG 简易地形 */
+.terrain-svg { width: 100%; height: 100%; position: absolute; inset: 0; }
+
+/* 底部提示 */
+.alert-bar {
+  background: rgba(20,28,8,0.75); border-left: 3px solid #90C840;
+  border-radius: 0 10px 10px 0; padding: 14px 20px;
+  backdrop-filter: blur(8px); display: flex; align-items: center; gap: 12px;
+}
+.alert-bar .alert-icon { font-size: 26px; }
+.alert-bar .alert-text { font-size: 20px; color: #C0D8A0; line-height: 1.5; }
+.alert-bar .alert-text strong { color: #D8F080; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">🌍 云岭村地理智库<span>GIS 地理信息系统 · AI数据分析</span></div>
+  <nav>
+    <button class="active" id="navOverview" onclick="switchTab('overview')">📊 综合概览</button>
+    <button id="navTerrain" onclick="switchTab('terrain')">⛰️ 地形气候</button>
+    <button id="navLand" onclick="switchTab('land')">🌱 土地资源</button>
+    <button id="navRisk" onclick="switchTab('risk')">⚠️ 风险评估</button>
+  </nav>
+</div>
+
+<div class="main">
+
+  <!-- ===== 标签页1：综合概览 ===== -->
+  <div class="tab active" id="tabOverview">
+    <div class="hero">
+      <h1>云岭村地理信息综合分析</h1>
+      <div class="hero-sub">数据来源：卫星遥感 · 气象站点 · 国土调查 · 实地测绘 | 更新时间：2026年5月</div>
+    </div>
+
+    <div class="overview-row">
+      <div class="overview-card">
+        <div class="icon">🏔️</div>
+        <div class="value">620-940<span style="font-size:18px">m</span></div>
+        <div class="label">海拔范围</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">🌡️</div>
+        <div class="value">17.8<span style="font-size:18px">°C</span></div>
+        <div class="label">年均气温</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">🌧️</div>
+        <div class="value">1380<span style="font-size:18px">mm</span></div>
+        <div class="label">年均降雨量</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">📐</div>
+        <div class="value">23<span style="font-size:18px">°</span></div>
+        <div class="label">平均坡度</div>
+      </div>
+    </div>
+
+    <div class="content-row">
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>地理位置</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">📍</div>
+              <div class="indicator-info">
+                <div class="name">所属行政区</div>
+                <div class="desc">云岭山区腹地，距县城38公里</div>
+              </div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">📏</div>
+              <div class="indicator-info">
+                <div class="name">村域面积</div>
+                <div class="desc">约14.6平方公里</div>
+              </div>
+              <div class="indicator-value">14.6<span class="unit">km²</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🛣️</div>
+              <div class="indicator-info">
+                <div class="name">通村道路</div>
+                <div class="desc">仅1条硬化路，雨季常中断</div>
+              </div>
+              <div class="indicator-value">1<span class="unit">条</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🏘️</div>
+              <div class="indicator-info">
+                <div class="name">自然村分布</div>
+                <div class="desc">8个村民小组，分散山谷间</div>
+              </div>
+              <div class="indicator-value">8<span class="unit">组</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>柑橘种植适应性</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">☀️</div>
+              <div class="indicator-info">
+                <div class="name">年日照时数</div>
+                <div class="desc">适宜柑橘生长（>1200h为优）</div>
+              </div>
+              <div class="indicator-value">1580<span class="unit">h</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🌡️</div>
+              <div class="indicator-info">
+                <div class="name">≥10°C积温</div>
+                <div class="desc">贡柑种植的适宜温区</div>
+              </div>
+              <div class="indicator-value">5480<span class="unit">°C</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🪨</div>
+              <div class="indicator-info">
+                <div class="name">土壤类型</div>
+                <div class="desc">红壤为主，pH 5.2-6.0</div>
+              </div>
+              <div class="indicator-value">红壤<span class="unit">偏酸</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">💧</div>
+              <div class="indicator-info">
+                <div class="name">灌溉条件</div>
+                <div class="desc">依赖自然降雨，无系统灌溉</div>
+              </div>
+              <div class="indicator-value" style="color:#E8A840">不足<span class="unit">⚠️</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-bar">
+      <div class="alert-icon">🔍</div>
+      <div class="alert-text">
+        <strong>地理智库提示</strong>：云岭村具备贡柑种植的<strong>自然气候优势</strong>（积温、日照均达标），但<strong>地形破碎、水利缺失、交通单一</strong>是核心地理制约因素。产业规划需优先解决灌溉与物流问题。
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 标签页2：地形气候 ===== -->
+  <div class="tab" id="tabTerrain">
+    <div class="hero">
+      <h1>地形地貌与气候特征</h1>
+      <div class="hero-sub">山地占比 82% · 喀斯特地貌 · 亚热带季风气候</div>
+    </div>
+
+    <div class="content-row">
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>地形特征</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">⛰️</div>
+              <div class="indicator-info">
+                <div class="name">山地面积占比</div>
+                <div class="desc">坡度>15°区域占村域面积</div>
+              </div>
+              <div class="indicator-value">82<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🏞️</div>
+              <div class="indicator-info">
+                <div class="name">山谷平地</div>
+                <div class="desc">适宜耕作与居住的缓坡地</div>
+              </div>
+              <div class="indicator-value">18<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🪨</div>
+              <div class="indicator-info">
+                <div class="name">喀斯特地貌</div>
+                <div class="desc">岩溶裂隙发育，地表水渗漏</div>
+              </div>
+              <div class="indicator-value" style="color:#E8A840">显著<span class="unit">⚠️</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3><span class="dot"></span>降水特征</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">🌧️</div>
+              <div class="indicator-info">
+                <div class="name">年均降雨量</div>
+                <div class="desc">5-9月集中全年72%降雨</div>
+              </div>
+              <div class="indicator-value">1380<span class="unit">mm</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">⛈️</div>
+              <div class="indicator-info">
+                <div class="name">暴雨日数（年）</div>
+                <div class="desc">日降雨量≥50mm天数</div>
+              </div>
+              <div class="indicator-value">14<span class="unit">天</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🌊</div>
+              <div class="indicator-info">
+                <div class="name">道路中断频率</div>
+                <div class="desc">雨季村道被冲断年均次数</div>
+              </div>
+              <div class="indicator-value" style="color:#E87050">8<span class="unit">次/年</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>简易等高线地形图</h3>
+          <div class="map-area" style="height:280px;">
+            <svg viewBox="0 0 400 280" class="terrain-svg" style="position:relative;">
+              <!-- 天空渐变 -->
+              <rect width="400" height="280" fill="rgba(18,28,8,0.6)"/>
+              <!-- 远山 -->
+              <path d="M0,180 Q50,100 100,150 Q140,80 200,130 Q260,70 320,120 Q360,90 400,140 L400,280 L0,280Z" fill="rgba(60,90,30,0.5)"/>
+              <!-- 近山 -->
+              <path d="M0,200 Q60,160 120,190 Q180,140 240,180 Q300,150 360,190 L400,170 L400,280 L0,280Z" fill="rgba(80,110,40,0.5)"/>
+              <!-- 山谷 -->
+              <path d="M0,240 Q100,220 180,250 Q260,230 340,260 L400,245 L400,280 L0,280Z" fill="rgba(100,140,50,0.4)"/>
+              <!-- 河流 -->
+              <path d="M160,270 Q200,255 240,265 Q280,250 320,268" stroke="rgba(100,180,200,0.5)" stroke-width="3" fill="none"/>
+              <!-- 村落标注 -->
+              <circle cx="140" cy="248" r="4" fill="#E8A840"/>
+              <circle cx="230" cy="260" r="4" fill="#E8A840"/>
+              <circle cx="300" cy="255" r="4" fill="#E8A840"/>
+              <!-- 等高线标注 -->
+              <text x="350" y="125" fill="rgba(180,220,140,0.4)" font-size="10">900m</text>
+              <text x="350" y="165" fill="rgba(180,220,140,0.4)" font-size="10">800m</text>
+              <text x="350" y="205" fill="rgba(180,220,140,0.4)" font-size="10">700m</text>
+            </svg>
+            <div style="position:relative;z-index:2;text-align:center;margin-top:-40px;">
+              <span style="color:#B0C898;font-size:18px;">▲ 云岭村地势：西北高、东南低，山谷狭长分布</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3><span class="dot"></span>气温与物候</h3>
+          <div class="tag-row">
+            <div class="tag">年均温 17.8°C</div>
+            <div class="tag">1月均温 7.2°C</div>
+            <div class="tag">7月均温 27.5°C</div>
+            <div class="tag">无霜期 310 天</div>
+            <div class="tag">≥10°C积温 5480°C</div>
+            <div class="tag">柑橘花期 3月下旬</div>
+            <div class="tag">果实成熟 11月-1月</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 标签页3：土地资源 ===== -->
+  <div class="tab" id="tabLand">
+    <div class="hero">
+      <h1>土地资源与耕地分析</h1>
+      <div class="hero-sub">耕地面积 1,860 亩 · 林果地 4,200 亩 · 户均经营规模小且分散</div>
+    </div>
+
+    <div class="overview-row">
+      <div class="overview-card">
+        <div class="icon">🌾</div>
+        <div class="value">1,860<span style="font-size:18px">亩</span></div>
+        <div class="label">耕地总面积</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">🍊</div>
+        <div class="value">4,200<span style="font-size:18px">亩</span></div>
+        <div class="label">林果种植面积</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">👨‍🌾</div>
+        <div class="value">2.3<span style="font-size:18px">亩/户</span></div>
+        <div class="label">户均耕地</div>
+      </div>
+      <div class="overview-card">
+        <div class="icon">🧩</div>
+        <div class="value">5-7<span style="font-size:18px">块/户</span></div>
+        <div class="label">户均地块数</div>
+      </div>
+    </div>
+
+    <div class="content-row">
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>土地利用结构</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">🌲</div>
+              <div class="indicator-info">
+                <div class="name">林地</div>
+                <div class="desc">生态林与用材林</div>
+              </div>
+              <div class="indicator-value">58<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🍊</div>
+              <div class="indicator-info">
+                <div class="name">果园（贡柑为主）</div>
+                <div class="desc">村域主要经济来源</div>
+              </div>
+              <div class="indicator-value">24<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🌾</div>
+              <div class="indicator-info">
+                <div class="name">耕地（水稻/玉米）</div>
+                <div class="desc">口粮田，自给为主</div>
+              </div>
+              <div class="indicator-value">11<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🏘️</div>
+              <div class="indicator-info">
+                <div class="name">宅基地与其他</div>
+                <div class="desc">村庄建设用地</div>
+              </div>
+              <div class="indicator-value">7<span class="unit">%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>耕地质量评级</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">⭐</div>
+              <div class="indicator-info">
+                <div class="name">一级地（优质）</div>
+                <div class="desc">河谷平坝，土层>80cm</div>
+              </div>
+              <div class="indicator-value" style="color:#90E880">12<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">⭐⭐</div>
+              <div class="indicator-info">
+                <div class="name">二级地（良好）</div>
+                <div class="desc">缓坡梯田，土层40-80cm</div>
+              </div>
+              <div class="indicator-value" style="color:#D8E860">28<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">⭐⭐⭐</div>
+              <div class="indicator-info">
+                <div class="name">三级地（一般）</div>
+                <div class="desc">坡耕地，土层<40cm</div>
+              </div>
+              <div class="indicator-value" style="color:#E8A840">45<span class="unit">%</span></div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">⚠️</div>
+              <div class="indicator-info">
+                <div class="name">不宜耕作地</div>
+                <div class="desc">>25°陡坡，建议退耕</div>
+              </div>
+              <div class="indicator-value" style="color:#E87050">15<span class="unit">%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-bar">
+      <div class="alert-icon">💡</div>
+      <div class="alert-text">
+        <strong>关键发现</strong>：60%耕地为三级及以下，<strong>坡耕地占比大、地块零碎</strong>是制约机械化与规模化经营的核心瓶颈。15%陡坡地应逐步退耕还林。
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 标签页4：风险评估 ===== -->
+  <div class="tab" id="tabRisk">
+    <div class="hero">
+      <h1>地理风险与灾害评估</h1>
+      <div class="hero-sub">地质灾害 · 气象风险 · 交通脆弱性 · 产业地理风险</div>
+    </div>
+
+    <div class="content-row">
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>地质灾害风险</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">🪨</div>
+              <div class="indicator-info">
+                <div class="name">滑坡风险区</div>
+                <div class="desc">6处隐患点，威胁3个村民组</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:68%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#E8A840;font-size:20px;">中高</div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">💧</div>
+              <div class="indicator-info">
+                <div class="name">山洪沟道</div>
+                <div class="desc">4条主沟，汛期水位暴涨</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:78%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#E87050;font-size:20px;">高</div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🕳️</div>
+              <div class="indicator-info">
+                <div class="name">岩溶塌陷</div>
+                <div class="desc">喀斯特区，3处小型塌陷记录</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:35%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#B8D880;font-size:20px;">低</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3><span class="dot"></span>气象与交通风险</h3>
+          <div class="indicator-list">
+            <div class="indicator-item">
+              <div class="indicator-badge">🌧️</div>
+              <div class="indicator-info">
+                <div class="name">暴雨洪涝</div>
+                <div class="desc">年均14天暴雨，局地内涝</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:72%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#E8A840;font-size:20px;">中高</div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">🛣️</div>
+              <div class="indicator-info">
+                <div class="name">道路中断风险</div>
+                <div class="desc">唯一通村路穿越3处易塌方区</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:85%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#E87050;font-size:20px;">极高</div>
+            </div>
+            <div class="indicator-item">
+              <div class="indicator-badge">📡</div>
+              <div class="indicator-info">
+                <div class="name">通信中断</div>
+                <div class="desc">暴雨致基站断电，年均3次</div>
+              </div>
+              <div class="risk-bar" style="width:120px;">
+                <div class="bar-fill"><div class="bar-inner" style="width:50%;"></div></div>
+              </div>
+              <div class="risk-level" style="color:#E8A840;font-size:20px;">中等</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:22px;">
+      <h3><span class="dot"></span>产业地理风险综合矩阵</h3>
+      <div class="indicator-list">
+        <div class="indicator-item" style="border-left-color:rgba(232,112,80,0.6);">
+          <div class="indicator-badge" style="background:rgba(120,30,20,0.4);">🔴</div>
+          <div class="indicator-info">
+            <div class="name" style="color:#F0A090;">运输中断导致滞销</div>
+            <div class="desc">雨季道路中断，柑橘无法外运，腐烂率激增</div>
+          </div>
+          <div class="indicator-value" style="color:#E87050;">高风险<span class="unit">★★★★★</span></div>
+        </div>
+        <div class="indicator-item" style="border-left-color:rgba(232,168,64,0.6);">
+          <div class="indicator-badge" style="background:rgba(100,60,20,0.4);">🟠</div>
+          <div class="indicator-info">
+            <div class="name" style="color:#F0C880;">坡地果园水土流失</div>
+            <div class="desc">>20°坡地果园缺乏水土保持措施，肥力逐年下降</div>
+          </div>
+          <div class="indicator-value" style="color:#E8A840;">中高风险<span class="unit">★★★★☆</span></div>
+        </div>
+        <div class="indicator-item" style="border-left-color:rgba(232,168,64,0.6);">
+          <div class="indicator-badge" style="background:rgba(100,60,20,0.4);">🟠</div>
+          <div class="indicator-info">
+            <div class="name" style="color:#F0C880;">季节性缺水</div>
+            <div class="desc">喀斯特地貌蓄水难，秋冬旱季灌溉无保障</div>
+          </div>
+          <div class="indicator-value" style="color:#E8A840;">中高风险<span class="unit">★★★★☆</span></div>
+        </div>
+        <div class="indicator-item" style="border-left-color:rgba(184,216,128,0.6);">
+          <div class="indicator-badge" style="background:rgba(60,90,20,0.4);">🟢</div>
+          <div class="indicator-info">
+            <div class="name" style="color:#C8E898;">霜冻危害</div>
+            <div class="desc">无霜期310天，极端低温-2°C，霜冻概率较低</div>
+          </div>
+          <div class="indicator-value" style="color:#B8D880;">低风险<span class="unit">★★☆☆☆</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-bar" style="border-left-color:#E87050;">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text">
+        <strong>紧急预警</strong>：通村道路是全村产业<strong>唯一生命线</strong>，道路中断风险评级为"极高"。建议优先申报道路硬化与护坡加固工程，同时规划<strong>备用运输通道</strong>。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.topbar nav button').forEach(function(b) { b.classList.remove('active'); });
+
+  var tabEl = document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+
+  var navEl = document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (navEl) navEl.classList.add('active');
+
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

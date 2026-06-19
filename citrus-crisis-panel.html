@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>贡柑滞销事件档案</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Microsoft YaHei", sans-serif;
+  background: #1A0A08;
+  width: 100%; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.panel {
+  width: 680px; padding: 32px 28px;
+  background: linear-gradient(180deg, #2A0E0A 0%, #1A0604 100%);
+  border: 1px solid #5A2020;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(180,40,20,0.15);
+}
+
+/* 标题 */
+.panel-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 2px solid #3A1510;
+}
+.panel-header .icon {
+  width: 42px; height: 42px;
+  background: #C0392B; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.panel-header .title {
+  font-size: 20px; font-weight: bold; color: #E8C0B0;
+}
+.panel-header .sub {
+  font-size: 10px; color: #906050; margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+/* 三条数据卡片 */
+.cards-row {
+  display: flex; gap: 16px;
+}
+.card {
+  flex: 1; background: #1F0C08;
+  border: 1px solid #3A1510; border-radius: 12px;
+  padding: 20px 16px; text-align: center;
+  transition: all .3s;
+}
+.card:hover {
+  border-color: #8B2A20;
+  box-shadow: 0 4px 20px rgba(180,40,20,0.2);
+}
+.card-icon {
+  width: 52px; height: 52px; margin: 0 auto 12px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.card-icon.red { background: #4A1510; }
+.card-icon.orange { background: #4A2A10; }
+.card-icon.crimson { background: #4A1015; }
+.card-value {
+  font-size: 28px; font-weight: bold;
+  background: linear-gradient(180deg, #E85040 0%, #C0392B 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.card-label {
+  font-size: 12px; color: #C08070; margin-top: 4px;
+  font-weight: bold;
+}
+.card-desc {
+  font-size: 10px; color: #805050; margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* 底部警示条 */
+.alert-bar {
+  margin-top: 20px; padding: 12px 18px;
+  background: #1F0C08; border-left: 3px solid #C0392B;
+  border-radius: 0 8px 8px 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.alert-bar .alert-icon { font-size: 20px; }
+.alert-bar .alert-text {
+  font-size: 12px; color: #D09080; line-height: 1.5;
+}
+.alert-bar .alert-text strong { color: #E85040; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <!-- 标题 -->
+  <div class="panel-header">
+    <div class="icon">📋</div>
+    <div>
+      <div class="title">贡柑滞销事件档案</div>
+      <div class="sub">云岭村柑橘产业危机 · 数据速览</div>
+    </div>
+  </div>
+
+  <!-- 三张数据卡片 -->
+  <div class="cards-row">
+    <!-- 卡片1：果子烂地 -->
+    <div class="card">
+      <div class="card-icon red">🍊</div>
+      <div class="card-value">60%</div>
+      <div class="card-label">果子烂在地里</div>
+      <div class="card-desc">去年11月至今年2月<br>超过一半柑橘未售出</div>
+    </div>
+
+    <!-- 卡片2：被压价 -->
+    <div class="card">
+      <div class="card-icon orange">📉</div>
+      <div class="card-value">0.6<span style="font-size:16px">元/斤</span></div>
+      <div class="card-label">收购价被压低</div>
+      <div class="card-desc">正常售价2.5元/斤<br>实际成交仅0.6元/斤</div>
+    </div>
+
+    <!-- 卡片3：收购商跑路 -->
+    <div class="card">
+      <div class="card-icon crimson">🚫</div>
+      <div class="card-value">3<span style="font-size:16px">批</span></div>
+      <div class="card-label">收购商跑路</div>
+      <div class="card-desc">先后3批收购商<br>违约弃购、拖欠货款</div>
+    </div>
+  </div>
+
+  <!-- 底部警示 -->
+  <div class="alert-bar">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text">
+      <strong>紧急状态</strong>：全村柑橘种植户127户，其中<strong>89户面临亏损</strong>，23户可能因负债返贫。需立即制定产业救援方案。
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
