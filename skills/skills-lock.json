@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "skills": {
+    "0-ui-ux-pro-max": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "e75e6b426e3eb40693521e0f4a78a8576e75231fc18a190b23307dd9fd46974c"
+    },
+    "canvas-design": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "fe3d79d4396d2d6a382d172cdab31a6fdd2eb73164fda9253c9b2fd499a01a7d"
+    },
+    "claude-mem": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "5e27cc516850b4021a9b6d32efc722499fee1ec7506bcc814b48ad8556739cf4"
+    },
+    "docx": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cc3a4c413660b0836644d0b19b17be3db2bc5e6ba4080bbeaec04ec31ffd77a4"
+    },
+    "find-skills": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
+    },
+    "frontend-design": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "e8118284a6365753790d44bb2758a6032b3af27fa84696428d9233f2be0f4e78"
+    },
+    "glm-image-gen": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "045247192f0c157e98b9b543eadb4173fd1074c201cca4febb5b3a6d2550df20"
+    },
+    "glm-master-skill": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cf53f65ae50fccf9689b716a9fb55b2d3d1fe9305fc37e4ea0b4ca6352bec005"
+    },
+    "glmocr": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "a9da31a58b11122b0c5fdb73eda76dab9d808fdda975929e0aba71065673c58d"
+    },
+    "glmocr-formula": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "e2985c09a4d004ee2e64373b6557cb0723c01e402bb0eac120e530c1a31f6de6"
+    },
+    "glmocr-handwriting": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "11950c938ba1e417ff71082b3f47ed8575b31c83656d66b332bdf81628764cdf"
+    },
+    "glmocr-sdk": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "621704645edb9bfd42d24b35b2d494b5c312dcb7ca09b6d9f240230f2d5b7b8f"
+    },
+    "glmocr-table": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "3b2905dae0272f5d1cd62fc500362a9c7d034a37b7546cfb2ac53e8e48c1a911"
+    },
+    "glmv-caption": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "fb6cb413d05094a38dad832d7483deaebedc6a2cf05cd390e3098612104d1f4d"
+    },
+    "glmv-doc-based-writing": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cd559ea60743ed7948e91d3813f7884d3ddd4731c8d4f1a6d57bdef17cda445e"
+    },
+    "glmv-grounding": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "062c5c6459e20a5b5ef34a4a67675bf3380e6688165e2549aeefb928a1f97722"
+    },
+    "glmv-pdf-to-ppt": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "ab963027d31ee24243502d94d11302216d850da28c338279b02d688d5a1753ad"
+    },
+    "glmv-pdf-to-web": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "d45ad895dd1226e76eca648a22d0370ebef3b48023c2c0df11abd6b2cea34c57"
+    },
+    "glmv-prd-to-app": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cd18f9d067404ac8489f9cf6f7ab47a01e1370a5fab3baab4b5a936e019e8542"
+    },
+    "glmv-prompt-gen": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "16a85195eb8333a1f32aad3821ba1f34b62d41b3cdc07f9828393a29eb78daa6"
+    },
+    "glmv-resume-screen": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "202284539dedfe480d150f0172887421bbe8ae1a12504d088c9282c750a63307"
+    },
+    "glmv-web-replication": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "5e6e2f573d2cd6038d22ccd8de7c2b2145d7c52b9d2551ba46b48a5e8ab6589b"
+    },
+    "pdf": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cfbc539377088ca7e44a813b30c306327385bbd973cd7a721e1743f60837dd62"
+    },
+    "pptx": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "313a2ca112525e5084ef78d7cbe82f0c473c3b7b58b57cb5b3620b9b60ee9487"
+    },
+    "pptx-generator": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "956dcd3e9c6d0b4f174f65ae0046dc51217df2436a38aea08a91f75701db6b52"
+    },
+    "self-improving-agent": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "aeaea071a2d738688f585a0d83314f6ed0809ebdfa1f4ff5df483ce613fd8cb3"
+    },
+    "skill-creator": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "b0818700436c3cf2a09bde7a9a9e3511c6db1bbbc2938753eb6bbd6f36f9f48f"
+    },
+    "skill-vetter": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "16dafe454cee5809a07b0a649ffe3463b1515d49ad56f19cd631b9324c132932"
+    },
+    "summarize": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "8b1b755a58e22504b23334b2d030f2475d060ec37a1dfa9e55d1126d9c5664b2"
+    },
+    "using-superpowers": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "5ed84a512f8664cc440ff26b19a0087eae6b2979e9e79cb26366b7f7b134e758"
+    },
+    "web-access": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "73b7ce9482fe55dc599e036e26fd8d8382a3a1079791d14ad858424b3d225d4a"
+    }
+  }
+}

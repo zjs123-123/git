@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "miniapp-develop": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "9bc1303386b0f499ec3d19e9ddf4b0366f939b37665e16b61295666ab39d3b1c"
+    },
+    "ppt": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "cef51c0611f14c6bb145d8609528aa927024fbf7043da8e2fe1a76e2c9c9d32b"
+    },
+    "ui-designer": {
+      "source": "modelscope.cn",
+      "sourceType": "well-known",
+      "computedHash": "adb93fd649d7243c86382a1918174a7348c41084ffcdf4bda9da9bb4ec9826f7"
+    }
+  }
+}
