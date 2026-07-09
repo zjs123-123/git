@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>云岭村 · 乡村共创任务平台（学生端）</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: url('village-bg.png') center/cover no-repeat fixed;
+  color: #F0E8D8;
+  min-height: 100vh;
+  position: relative;
+  transition: background .6s ease;
+}
+body.bg-survey {
+  background: url('survey-bg.png') center/cover no-repeat fixed;
+}
+body.bg-yunling {
+  background: url('yunling-bg.png') center/cover no-repeat fixed;
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 0; pointer-events: none;
+}
+body.bg-survey::before {
+  background: rgba(30,16,8,0.38);
+}
+body.bg-yunling::before {
+  background: rgba(8,18,32,0.42);
+}
+/* 调研背景下的面板微调 */
+body.bg-survey .hero { background: rgba(30,16,10,0.72); border-color: rgba(210,160,100,0.25); }
+body.bg-survey .form-section { background: rgba(28,14,8,0.72); border-color: rgba(210,160,100,0.25); }
+body.bg-survey .task-item { background: rgba(26,14,8,0.68); }
+body.bg-survey .analysis-card { background: rgba(26,14,8,0.72); }
+/* 云岭背景下的面板微调 */
+body.bg-yunling .hero.action { background: rgba(6,14,28,0.72); border-color: rgba(110,180,230,0.25); }
+body.bg-yunling .form-section.action { background: rgba(6,14,28,0.72); border-color: rgba(110,180,230,0.25); }
+body.bg-yunling .task-item.action { background: rgba(6,16,28,0.68); }
+body.bg-yunling .analysis-card.action { background: rgba(6,14,28,0.72); }
+
+/* ===== 顶部导航 — 沉浸式乡村科技风 ===== */
+.topbar {
+  background: rgba(18,20,22,0.82);
+  padding: 12px 32px; display: flex; align-items: center; gap: 20px;
+  position: sticky; top:0; z-index:100;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  flex-wrap: wrap;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.35);
+}
+.topbar .logo {
+  font-size: 36px; font-weight: 800; letter-spacing: 2px;
+  color: #E8DCC8;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  white-space: nowrap;
+}
+.topbar .logo-icon {
+  font-size: 32px; margin-right: 2px; vertical-align: middle;
+}
+.topbar .logo-sub {
+  font-size: 17px; color: #9E9078; margin-left: 12px;
+  font-weight: 400; letter-spacing: 1px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+.topbar nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.topbar nav button {
+  background: transparent; border: none; color: #C8BCA8;
+  padding: 10px 20px; border-radius: 22px; font-size: 17px; cursor: pointer;
+  font-family: inherit; transition: all .25s ease;
+  white-space: nowrap;
+}
+.topbar nav button:hover {
+  background: rgba(255,255,255,0.06); color: #F0E8D8;
+}
+.topbar nav button.active {
+  background: linear-gradient(135deg, rgba(50,95,45,0.85) 0%, rgba(38,72,32,0.9) 100%);
+  color: #E8F0D0;
+  box-shadow: 0 0 16px rgba(80,160,60,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1px solid rgba(130,200,90,0.35);
+}
+
+/* ===== 主容器 ===== */
+.main { max-width: 1000px; margin: 0 auto; padding: 28px 22px; position: relative; z-index: 1; }
+
+/* ===== 页面切换 ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== 共用面板样式 ===== */
+.hero {
+  background: rgba(25,14,8,0.78); border: 1px solid rgba(200,150,90,0.2);
+  border-radius: 18px; padding: 36px 32px; margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+}
+.hero h1 {
+  font-size: 44px;
+  background: linear-gradient(135deg, #F8E080 0%, #E0B050 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.hero .hero-sub { font-size: 22px; color: #A08868; margin-bottom: 20px; }
+.hero .deadline {
+  display: inline-block; background: rgba(60,24,8,0.7); border: 1px solid rgba(220,160,80,0.5);
+  color: #F8E0A0; padding: 7px 20px; border-radius: 14px; font-size: 18px;
+}
+/* 绿色Hero */
+.hero.geo {
+  background: rgba(18,28,8,0.78); border-color: rgba(150,190,90,0.2);
+}
+.hero.geo h1 {
+  background: linear-gradient(135deg, #C8E890 0%, #80B840 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero.geo .hero-sub { color: #90A870; }
+.hero.geo .deadline { background: rgba(30,50,10,0.7); border-color: rgba(160,210,80,0.5); color: #D8F0A0; }
+
+.task-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.task-item {
+  background: rgba(22,12,6,0.75); border: 1px solid rgba(160,120,70,0.15);
+  border-radius: 14px; padding: 18px 22px; display: flex; gap: 16px;
+  align-items: flex-start; backdrop-filter: blur(6px);
+}
+.task-item.geo { background: rgba(16,24,6,0.75); border-color: rgba(140,180,80,0.15); }
+.task-num {
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(60,32,14,0.7); color: #E8C870;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 24px;
+  border: 2px solid rgba(200,150,80,0.3);
+}
+.task-num.geo { background: rgba(40,70,20,0.7); color: #B8D880; border-color: rgba(150,190,80,0.3); }
+.task-content { flex:1; }
+.task-content .q { font-size: 24px; color: #F0D8B8; font-weight: bold; }
+.task-content .q.geo { color: #C8E8A0; }
+.task-content .hint { font-size: 18px; color: #907050; margin-top: 5px; }
+.task-content .hint.geo { color: #709060; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #D4A040 0%, #B87828 100%);
+  color: #1A0A02; border: none;
+  padding: 16px 40px; border-radius: 14px; font-size: 26px;
+  font-weight: bold; cursor: pointer; font-family: inherit;
+  transition: all .2s; box-shadow: 0 6px 24px rgba(180,120,40,0.3);
+}
+.btn-primary:hover { background: linear-gradient(135deg, #E8B860 0%, #C89038 100%); transform: translateY(-3px); }
+.btn-primary.geo {
+  background: linear-gradient(135deg, #80B840 0%, #5A9030 100%);
+  box-shadow: 0 6px 24px rgba(120,180,40,0.3);
+}
+.btn-primary.geo:hover { background: linear-gradient(135deg, #A0D860 0%, #70A840 100%); }
+
+.btn-secondary {
+  background: rgba(30,16,8,0.7); border: 1px solid rgba(180,120,60,0.3); color: #D4A860;
+  padding: 13px 28px; border-radius: 12px; font-size: 22px;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+  backdrop-filter: blur(6px);
+}
+.btn-secondary:hover { border-color: rgba(220,160,80,0.5); background: rgba(50,28,14,0.75); }
+.btn-secondary.geo { border-color: rgba(140,190,80,0.3); color: #A0C878; background: rgba(20,32,10,0.7); }
+.btn-secondary.geo:hover { border-color: rgba(170,220,80,0.5); background: rgba(30,50,16,0.75); }
+
+/* ===== 提交表单页 ===== */
+.form-section {
+  background: rgba(22,12,6,0.78); border: 1px solid rgba(200,150,90,0.2);
+  border-radius: 18px; padding: 30px; margin-bottom: 22px;
+  backdrop-filter: blur(8px);
+}
+.form-section.geo { background: rgba(18,28,8,0.78); border-color: rgba(150,190,90,0.2); }
+.form-section h2 { font-size: 34px; color: #E8C870; margin-bottom: 22px; }
+.form-section h2.geo { color: #B8D880; }
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block; font-size: 22px; color: #C0A080; margin-bottom: 7px;
+}
+.form-group label.geo { color: #A0C888; }
+.form-group label .required { color: #E87050; }
+.form-group input, .form-group textarea {
+  width: 100%; background: rgba(12,6,2,0.7); border: 1px solid rgba(160,110,60,0.25);
+  color: #F0D8C0; padding: 13px 16px; border-radius: 10px;
+  font-size: 20px; font-family: inherit; resize: vertical;
+  outline: none; transition: border .2s;
+}
+.form-group input.geo, .form-group textarea.geo {
+  background: rgba(8,16,4,0.7); border-color: rgba(140,180,80,0.25); color: #D8E8C0;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: rgba(220,160,80,0.5); }
+.form-group input.geo:focus, .form-group textarea.geo:focus { border-color: rgba(160,210,80,0.5); }
+.form-group textarea { min-height: 110px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .form-group { flex: 1; }
+
+.btns-row { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+
+/* ===== 提交成功 / AI分析 ===== */
+.success-card {
+  background: rgba(22,14,8,0.78); border: 2px solid rgba(120,200,80,0.4);
+  border-radius: 18px; padding: 30px; text-align: center; margin-bottom: 22px;
+  backdrop-filter: blur(8px);
+}
+.success-card.geo { border-color: rgba(140,210,80,0.4); }
+.success-card .check { font-size: 60px; margin-bottom: 12px; }
+.success-card h2 { font-size: 34px; color: #90E080; margin-bottom: 8px; }
+.success-card h2.geo { color: #A0E880; }
+.success-card .msg { font-size: 22px; color: #80B868; }
+.success-card .msg.geo { color: #90B878; }
+
+.analysis-card {
+  background: rgba(22,12,6,0.78); border: 1px solid rgba(200,150,90,0.2);
+  border-radius: 18px; padding: 26px; margin-bottom: 22px;
+  backdrop-filter: blur(8px);
+}
+.analysis-card.geo { background: rgba(18,28,8,0.78); border-color: rgba(150,190,90,0.2); }
+.analysis-card h3 {
+  font-size: 28px; color: #E8C870; margin-bottom: 16px;
+  padding-bottom: 10px; border-bottom: 1px solid rgba(180,130,80,0.2);
+}
+.analysis-card h3.geo { color: #B8D880; border-bottom-color: rgba(150,190,80,0.2); }
+.analysis-item {
+  padding: 12px 0; border-bottom: 1px solid rgba(80,50,20,0.3);
+}
+.analysis-item:last-child { border-bottom: none; }
+.analysis-item .q-label {
+  font-size: 20px; color: #A08060; margin-bottom: 5px;
+}
+.analysis-item .q-label.geo { color: #90A870; }
+.analysis-item .a-label {
+  font-size: 18px; color: #C89860; margin-top: 5px;
+  font-style: italic;
+}
+.analysis-item .a-label.geo { color: #A0C880; }
+.analysis-item .score-tag {
+  float: right; font-size: 18px; padding: 3px 12px;
+  border-radius: 10px; font-weight: bold;
+}
+.score-high { background: rgba(40,100,30,0.5); color: #90E880; }
+.score-mid { background: rgba(100,70,20,0.5); color: #F0D870; }
+.score-low { background: rgba(100,20,20,0.5); color: #F09080; }
+
+.overall-score {
+  text-align: center; margin-bottom: 22px;
+}
+.overall-score .big-score {
+  font-size: 76px; font-weight: bold;
+  background: linear-gradient(180deg, #F0D060 0%, #C89030 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.overall-score .big-score.geo {
+  background: linear-gradient(180deg, #C8E890 0%, #70A830 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.overall-score .label { font-size: 22px; color: #A08060; }
+
+/* ===== 仪表盘页 ===== */
+.stats-row {
+  display: flex; gap: 16px; margin-bottom: 22px;
+}
+.stat-card {
+  flex:1; background: rgba(22,12,6,0.78); border: 1px solid rgba(200,150,90,0.2);
+  border-radius: 14px; padding: 26px; text-align: center;
+  backdrop-filter: blur(8px);
+}
+.stat-card.geo { background: rgba(18,28,8,0.78); border-color: rgba(150,190,90,0.2); }
+.stat-card .num { font-size: 56px; font-weight: bold; color: #E8C870; }
+.stat-card .num.geo { color: #B8D880; }
+.stat-card .label { font-size: 20px; color: #A08060; margin-top: 5px; }
+.stat-card .label.geo { color: #90A870; }
+
+.submission-list { display: flex; flex-direction: column; gap: 8px; }
+.submission-item {
+  background: rgba(22,12,6,0.75); border: 1px solid rgba(160,120,70,0.15);
+  border-radius: 12px; padding: 16px 20px; cursor: pointer; transition: all .2s;
+  display: flex; justify-content: space-between; align-items: center;
+  backdrop-filter: blur(6px);
+}
+.submission-item:hover { border-color: rgba(200,150,80,0.4); }
+.submission-item.geo { background: rgba(16,24,6,0.75); border-color: rgba(140,180,80,0.15); }
+.submission-item.geo:hover { border-color: rgba(160,210,80,0.4); }
+.submission-item .sub-name { font-size: 24px; color: #F0D0A0; font-weight: bold; }
+.submission-item .sub-name.geo { color: #C8E8A0; }
+.submission-item .sub-meta { font-size: 16px; color: #907050; }
+.submission-item .sub-meta.geo { color: #709060; }
+.submission-item .sub-score { font-size: 26px; font-weight: bold; color: #E8C870; }
+.submission-item .sub-score.geo { color: #B8D880; }
+.submission-item .task-badge {
+  font-size: 14px; padding: 2px 10px; border-radius: 8px;
+  margin-right: 8px;
+}
+.task-badge.t1 { background: rgba(200,150,80,0.2); color: #E8C870; }
+.task-badge.t2 { background: rgba(140,190,80,0.2); color: #B8D880; }
+
+.empty-state {
+  text-align: center; padding: 70px 20px; color: #806040;
+}
+.empty-state .icon { font-size: 58px; margin-bottom: 14px; }
+
+/* 弹窗 */
+.modal-overlay {
+  display: none; position: fixed; inset:0;
+  background: rgba(0,0,0,0.8); z-index:200;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: rgba(22,12,6,0.95); border: 1px solid rgba(200,140,80,0.3);
+  border-radius: 18px; padding: 30px; max-width: 740px; width: 94%;
+  max-height: 85vh; overflow-y: auto;
+  backdrop-filter: blur(12px);
+}
+.modal h3 { font-size: 30px; color: #E8C870; margin-bottom: 16px; }
+.modal .close-btn {
+  float: right; background: none; border: none; color: #B09070;
+  font-size: 28px; cursor: pointer;
+}
+.modal::-webkit-scrollbar { width: 5px; }
+.modal::-webkit-scrollbar-thumb { background: rgba(160,100,50,0.4); border-radius: 3px; }
+
+/* 分区标题 */
+.section-divider {
+  margin: 32px 0 16px; padding: 0 4px;
+  font-size: 26px; font-weight: bold;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-divider.t1 { color: #E8C870; }
+.section-divider.t2 { color: #B8D880; }
+.section-divider::after { content: ""; flex:1; height: 1px; }
+.section-divider.t1::after { background: rgba(200,150,80,0.2); }
+.section-divider.t2::after { background: rgba(150,190,80,0.2); }
+
+.hero.action {
+  background: rgba(8,16,32,0.78); border-color: rgba(100,170,220,0.2);
+}
+.hero.action h1 {
+  background: linear-gradient(135deg, #88D8F8 0%, #48A0D0 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero.action .hero-sub { color: #80A8C0; }
+.hero.action .deadline { background: rgba(10,30,50,0.7); border-color: rgba(100,180,220,0.5); color: #C0E8F8; }
+.task-item.action { background: rgba(8,18,32,0.75); border-color: rgba(90,160,210,0.15); }
+.task-num.action { background: rgba(20,50,80,0.7); color: #80C8E8; border-color: rgba(100,180,220,0.3); }
+.task-content .q.action { color: #A8D8F0; }
+.task-content .hint.action { color: #6898B0; }
+.btn-primary.action {
+  background: linear-gradient(135deg, #3898C0 0%, #2878A0 100%);
+  box-shadow: 0 6px 24px rgba(60,140,200,0.3);
+}
+.btn-primary.action:hover { background: linear-gradient(135deg, #50B8E0 0%, #3898B8 100%); }
+.btn-secondary.action { border-color: rgba(100,170,220,0.3); color: #80B8D8; background: rgba(8,20,36,0.7); }
+.btn-secondary.action:hover { border-color: rgba(130,200,240,0.5); background: rgba(14,30,54,0.75); }
+.form-section.action { background: rgba(8,16,32,0.78); border-color: rgba(100,170,220,0.2); }
+.form-section h2.action { color: #88C8E8; }
+.form-group label.action { color: #80B0D0; }
+.form-group input.action, .form-group textarea.action {
+  background: rgba(4,12,24,0.7); border-color: rgba(90,150,200,0.25); color: #C0D8F0;
+}
+.form-group input.action:focus, .form-group textarea.action:focus { border-color: rgba(120,190,230,0.5); }
+.success-card.action { border-color: rgba(100,180,220,0.4); }
+.success-card h2.action { color: #80C8E8; }
+.success-card .msg.action { color: #68A8C8; }
+.analysis-card.action { background: rgba(8,16,32,0.78); border-color: rgba(100,170,220,0.2); }
+.analysis-card h3.action { color: #88C8E8; border-bottom-color: rgba(100,170,220,0.2); }
+.analysis-item .q-label.action { color: #80A8C0; }
+.analysis-item .a-label.action { color: #78B0D0; }
+.stat-card.action { background: rgba(8,16,32,0.78); border-color: rgba(100,170,220,0.2); }
+.stat-card .num.action { color: #88C8E8; }
+.stat-card .label.action { color: #80A8C0; }
+.submission-item.action { background: rgba(8,18,32,0.75); border-color: rgba(90,160,210,0.15); }
+.submission-item.action:hover { border-color: rgba(120,190,230,0.4); }
+.submission-item .sub-name.action { color: #A8D8F0; }
+.submission-item .sub-meta.action { color: #6890B0; }
+.submission-item .sub-score.action { color: #88C8E8; }
+.section-divider.t3 { color: #88C8E8; }
+.section-divider.t3::after { background: rgba(100,170,220,0.2); }
+.task-badge.t3 { background: rgba(100,170,220,0.2); color: #88C8E8; }
+.overall-score .big-score.action {
+  background: linear-gradient(180deg, #88D8F8 0%, #4098C0 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== 增强仪表盘样式 ===== */
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 18px 0; }
+.analytics-panel {
+  background: rgba(16,10,6,0.78); border: 1px solid rgba(180,140,90,0.2);
+  border-radius: 14px; padding: 20px; backdrop-filter: blur(8px);
+}
+.analytics-panel h4 { font-size: 22px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(180,140,90,0.15); }
+.analytics-panel h4.gold { color: #E8C870; }
+.analytics-panel h4.green { color: #B8D880; }
+.analytics-panel h4.blue { color: #88C8E8; }
+
+/* 排名表 */
+.rank-table { width: 100%; border-collapse: collapse; }
+.rank-table th { font-size: 16px; color: #A08060; padding: 8px 6px; text-align: left; border-bottom: 1px solid rgba(180,140,80,0.1); }
+.rank-table td { font-size: 17px; color: #E0D0B0; padding: 9px 6px; border-bottom: 1px solid rgba(100,60,20,0.15); }
+.rank-table .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 15px; }
+.rank-badge.gold { background: #D4A020; color: #1A0A02; }
+.rank-badge.silver { background: #A0A8B0; color: #1A0A02; }
+.rank-badge.bronze { background: #B87840; color: #1A0A02; }
+.rank-badge.normal { background: rgba(60,40,20,0.6); color: #A08060; }
+.rank-table .task-tag { font-size: 13px; padding: 2px 8px; border-radius: 6px; margin-left: 6px; }
+.task-tag.t1 { background: rgba(200,150,80,0.2); color: #E8C870; }
+.task-tag.t2 { background: rgba(140,190,80,0.2); color: #B8D880; }
+.task-tag.t3 { background: rgba(100,170,220,0.2); color: #88C8E8; }
+
+/* 关键词云 */
+.keyword-cloud { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 8px 0; }
+.keyword-tag { padding: 5px 14px; border-radius: 16px; font-weight: bold; transition: all .2s; cursor: default; }
+.keyword-tag:hover { transform: scale(1.08); }
+.keyword-tag.xl { font-size: 26px; padding: 8px 20px; }
+.keyword-tag.lg { font-size: 22px; padding: 7px 18px; }
+.keyword-tag.md { font-size: 18px; padding: 5px 14px; }
+.keyword-tag.sm { font-size: 15px; padding: 4px 10px; }
+.keyword-tag.c1 { background: rgba(200,150,60,0.2); color: #F0D080; border: 1px solid rgba(200,150,60,0.3); }
+.keyword-tag.c2 { background: rgba(140,190,60,0.2); color: #C8E898; border: 1px solid rgba(140,190,60,0.3); }
+.keyword-tag.c3 { background: rgba(100,170,220,0.2); color: #A8D8F8; border: 1px solid rgba(100,170,220,0.3); }
+.keyword-tag.c4 { background: rgba(200,100,100,0.2); color: #F0B8B0; border: 1px solid rgba(200,100,100,0.3); }
+.keyword-tag.c5 { background: rgba(160,120,200,0.2); color: #D0C0F0; border: 1px solid rgba(160,120,200,0.3); }
+
+/* 类型分布条 */
+.type-bar-wrap { margin: 10px 0; display: flex; align-items: center; gap: 12px; }
+.type-bar-label { font-size: 17px; color: #C0A080; width: 90px; flex-shrink: 0; text-align: right; }
+.type-bar-track { flex: 1; height: 22px; background: rgba(40,20,10,0.5); border-radius: 11px; overflow: hidden; }
+.type-bar-fill { height: 100%; border-radius: 11px; transition: width .8s ease; }
+.type-bar-fill.agri { background: linear-gradient(90deg, #7BA840, #A8D868); }
+.type-bar-fill.tour { background: linear-gradient(90deg, #D4A040, #F0D060); }
+.type-bar-fill.industry { background: linear-gradient(90deg, #3898C0, #68C8E8); }
+.type-bar-fill.combo { background: linear-gradient(90deg, #A060C0, #D0A0F0); }
+.type-bar-num { font-size: 17px; color: #E0D0B0; width: 50px; flex-shrink: 0; }
+
+/* 最佳方案页 */
+.best-badge {
+  display: inline-block; padding: 8px 24px;
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  color: #1A0800; border-radius: 20px;
+  font-size: 20px; font-weight: bold;
+  box-shadow: 0 4px 20px rgba(255,180,0,0.4);
+  margin-bottom: 18px;
+}
+.best-summary {
+  display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.best-summary .dim-card {
+  flex: 1; min-width: 140px;
+  background: rgba(20,14,8,0.78); border: 1px solid rgba(200,150,80,0.2);
+  border-radius: 12px; padding: 16px; text-align: center;
+  backdrop-filter: blur(6px);
+}
+.dim-card .dim-name { font-size: 16px; color: #A08060; margin-bottom: 4px; }
+.dim-card .dim-score { font-size: 34px; font-weight: bold; color: #F0D060; }
+.dim-card .dim-bar { height: 6px; background: rgba(60,30,10,0.5); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.dim-card .dim-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #F0D060, #F09030); }
+.best-answer-block {
+  background: rgba(18,12,6,0.75); border: 1px solid rgba(180,130,80,0.2);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  backdrop-filter: blur(6px);
+}
+.best-answer-block h4 { font-size: 20px; color: #E8C870; margin-bottom: 8px; }
+.best-answer-block .answer-text { font-size: 17px; color: #D8C0A0; line-height: 1.7; margin-bottom: 10px; }
+.best-answer-block .ai-comment { font-size: 16px; color: #90B878; font-style: italic; padding: 8px 14px; background: rgba(100,160,40,0.08); border-left: 3px solid rgba(140,190,80,0.4); border-radius: 0 6px 6px 0; }
+
+/* 响应式 */
+@media (max-width: 760px) {
+  .analytics-grid { grid-template-columns: 1fr; }
+  .best-summary { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="logo-icon">🏘️</span>乡村共创任务平台<span class="logo-sub">云岭村 · 学生端</span></div>
+  <nav>
+    <button id="navIntro" class="active" onclick="switchPage('intro')">📋 任务一</button>
+    <button id="navSubmit" onclick="switchPage('submit')">✏️ 方案提交</button>
+    <button id="navGeoIntro" onclick="switchPage('geoIntro')">🌍 任务二</button>
+    <button id="navGeoSubmit" onclick="switchPage('geoSubmit')">🗺️ 地理诊断</button>
+    <button id="navActionIntro" onclick="switchPage('actionIntro')">🚀 任务三</button>
+    <button id="navActionSubmit" onclick="switchPage('actionSubmit')">📝 行动方案</button>
+    <button id="navRubric" onclick="switchPage('rubric')">📐 评价量表</button>
+  </nav>
+</div>
+
+<div class="main">
+
+  <!-- ==================== 任务一：任务介绍 ==================== -->
+  <div class="page active" id="pageIntro">
+    <div class="hero">
+      <h1>《云岭村群众工作微方案》</h1>
+      <div class="hero-sub">小组课后任务 · 结合黄文秀基层工作方法 · 提交截止：第二课时前</div>
+      <div class="deadline">⏰ 提交截止：下节课上课前</div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item"><div class="task-num">1</div><div class="task-content"><div class="q">当前群众问题分析</div><div class="hint">结合云岭村资料，分析当前村民面临的主要问题和诉求</div></div></div>
+      <div class="task-item"><div class="task-num">2</div><div class="task-content"><div class="q">群众不信任的原因</div><div class="hint">为什么云岭村村民对实践团缺乏信任？分析深层原因</div></div></div>
+      <div class="task-item"><div class="task-num">3</div><div class="task-content"><div class="q">黄文秀哪些做法体现了群众观点？</div><div class="hint">从"相信群众、依靠群众"的角度分析黄文秀的具体做法</div></div></div>
+      <div class="task-item"><div class="task-num">4</div><div class="task-content"><div class="q">黄文秀哪些做法体现了群众路线？</div><div class="hint">从"从群众中来，到群众中去"分析其工作方法</div></div></div>
+      <div class="task-item"><div class="task-num">5</div><div class="task-content"><div class="q">作为实践团成员，你会怎样真正发动群众参与建设？</div><div class="hint">提出具体可行的方案（至少3条措施）</div></div></div>
+      <div class="task-item"><div class="task-num">6</div><div class="task-content"><div class="q">人民群众为什么能够推动乡村建设？</div><div class="hint">从历史唯物主义和现实案例两个角度回答</div></div></div>
+    </div>
+
+    <button class="btn-primary" onclick="switchPage('submit')">✏️ 开始提交方案</button>
+  </div>
+
+  <!-- ==================== 任务一：提交表单 ==================== -->
+  <div class="page" id="pageSubmit">
+    <div class="form-section">
+      <h2>📝 提交《群众工作微方案》</h2>
+      <div class="form-row">
+        <div class="form-group"><label><span class="required">*</span> 小组名称</label><input id="groupName" placeholder="例如：第一小组 / 云岭振兴组"></div>
+        <div class="form-group"><label><span class="required">*</span> 组员姓名</label><input id="members" placeholder="例如：张三、李四、王五"></div>
+      </div>
+      <div class="form-group"><label><span class="required">*</span> 问题1：当前群众问题分析</label><textarea id="q1" placeholder="结合云岭村资料，分析当前村民面临的主要问题和诉求..."></textarea></div>
+      <div class="form-group"><label><span class="required">*</span> 问题2：群众不信任的原因</label><textarea id="q2" placeholder="为什么云岭村村民对实践团缺乏信任？分析深层原因..."></textarea></div>
+      <div class="form-group"><label><span class="required">*</span> 问题3：黄文秀哪些做法体现了群众观点？</label><textarea id="q3" placeholder="从相信群众、依靠群众的角度分析..."></textarea></div>
+      <div class="form-group"><label><span class="required">*</span> 问题4：黄文秀哪些做法体现了群众路线？</label><textarea id="q4" placeholder="从从群众中来，到群众中去分析其工作方法..."></textarea></div>
+      <div class="form-group"><label><span class="required">*</span> 问题5：作为实践团成员，你会怎样真正发动群众参与建设？</label><textarea id="q5" placeholder="提出具体可行的方案（至少3条措施）..."></textarea></div>
+      <div class="form-group"><label><span class="required">*</span> 问题6：人民群众为什么能够推动乡村建设？</label><textarea id="q6" placeholder="从历史唯物主义和现实案例两个角度回答..."></textarea></div>
+      <div class="btns-row">
+        <button class="btn-primary" onclick="submitTask1()">🚀 提交方案并获取AI分析</button>
+        <button class="btn-secondary" onclick="switchPage('intro')">← 返回任务说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 任务二：地理诊断介绍 ==================== -->
+  <div class="page" id="pageGeoIntro">
+    <div class="hero geo">
+      <h1>《云岭村地理诊断卡》</h1>
+      <div class="hero-sub">小组课后任务 · 结合竺可桢地理智库数据 · 提交截止：下节正式课前</div>
+      <div class="deadline">⏰ 提交截止：下节正式课前</div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item geo">
+        <div class="task-num geo">1</div>
+        <div class="task-content"><div class="q geo">云岭村面临哪些自然条件限制</div><div class="hint geo">综合分析地形（海拔620-940m、坡度23°、山地82%）、气候（降雨1380mm但季节错配）、土地（户均2.3亩、分散5-7处）、水文（喀斯特渗漏）等方面</div></div>
+      </div>
+      <div class="task-item geo">
+        <div class="task-num geo">2</div>
+        <div class="task-content"><div class="q geo">地形如何影响交通与产业</div><div class="hint geo">从道路建设难度、雨季中断频率（8次/年）、运输成本（占售价35%）、机械化受阻等角度分析地形→交通→产业的传导链条</div></div>
+      </div>
+      <div class="task-item geo">
+        <div class="task-num geo">3</div>
+        <div class="task-content"><div class="q geo">为什么山区乡村发展风险更高</div><div class="hint geo">从多重风险叠加（滑坡6处+山洪4条+缺水+道路中断）、风险连锁传导、抗风险能力弱等角度论证</div></div>
+      </div>
+      <div class="task-item geo">
+        <div class="task-num geo">4</div>
+        <div class="task-content"><div class="q geo">自然环境与乡村发展之间的关系</div><div class="hint geo">运用"因地制宜"理念，分析自然环境如何影响发展方式的选择，以及人类活动如何适应和改善自然条件</div></div>
+      </div>
+    </div>
+
+    <button class="btn-primary geo" onclick="switchPage('geoSubmit')">🗺️ 填写地理诊断卡</button>
+  </div>
+
+  <!-- ==================== 任务二：地理诊断表单 ==================== -->
+  <div class="page" id="pageGeoSubmit">
+    <div class="form-section geo">
+      <h2 class="geo">🗺️ 提交《云岭村地理诊断卡》</h2>
+      <div class="form-row">
+        <div class="form-group"><label class="geo"><span class="required">*</span> 小组名称</label><input class="geo" id="geoGroupName" placeholder="例如：第一小组 / 云岭振兴组"></div>
+        <div class="form-group"><label class="geo"><span class="required">*</span> 组员姓名</label><input class="geo" id="geoMembers" placeholder="例如：张三、李四、王五"></div>
+      </div>
+      <div class="form-group"><label class="geo"><span class="required">*</span> 问题1：云岭村面临哪些自然条件限制</label><textarea class="geo" id="gq1" placeholder="从地形（海拔620-940m、坡度23°、山地82%）、气候（降雨1380mm、5-9月占72%）、土地（户均2.3亩、分散5-7处、60%三级以下）、水文（喀斯特渗漏、灌溉不足）等方面综合分析..."></textarea></div>
+      <div class="form-group"><label class="geo"><span class="required">*</span> 问题2：地形如何影响交通与产业</label><textarea class="geo" id="gq2" placeholder="从道路建设（仅1条硬化路、穿越3处滑坡体）、运输成本（占售价35%、平原3倍）、雨季中断（年均8次）、机械化受阻（坡地无法机耕）等角度分析地形→交通→产业的传导关系..."></textarea></div>
+      <div class="form-group"><label class="geo"><span class="required">*</span> 问题3：为什么山区乡村发展风险更高</label><textarea class="geo" id="gq3" placeholder="从多重风险叠加（滑坡6处隐患+山洪4条沟道+缺水+道路中断）、风险连锁传导机制、抗风险能力弱（单一生命线、无应急预案）等方面论证..."></textarea></div>
+      <div class="form-group"><label class="geo"><span class="required">*</span> 问题4：自然环境与乡村发展之间的关系</label><textarea class="geo" id="gq4" placeholder="运用竺可桢"因地制宜"理念，分析：自然环境是发展的约束还是条件？如何从"对抗自然"转向"顺应自然"？结合云岭村实例说明..."></textarea></div>
+      <div class="btns-row">
+        <button class="btn-primary geo" onclick="submitGeo()">🚀 提交地理诊断卡并获取AI分析</button>
+        <button class="btn-secondary geo" onclick="switchPage('geoIntro')">← 返回地理诊断说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 任务二：地理诊断结果 ==================== -->
+  <div class="page" id="pageGeoResult">
+    <div class="success-card geo">
+      <div class="check">✅</div>
+      <h2 class="geo">地理诊断卡提交成功！</h2>
+      <div class="msg geo" id="geoResultGroupInfo"></div>
+    </div>
+
+    <div class="analysis-card geo">
+      <h3 class="geo">🌍 竺可桢地理智库 · AI分析反馈</h3>
+      <div class="overall-score">
+        <div class="big-score geo" id="geoOverallScoreDisplay">--</div>
+        <div class="label">综合评分（满分100）</div>
+      </div>
+      <div id="geoAnalysisContent"></div>
+    </div>
+
+    <div class="btns-row">
+      <button class="btn-primary geo" onclick="switchPage('rubric')">📐 查看评价量表</button>
+      <button class="btn-secondary geo" onclick="switchPage('geoSubmit')">🗺️ 继续提交（另一组）</button>
+    </div>
+  </div>
+
+  <!-- ==================== 任务一：提交结果 ==================== -->
+  <div class="page" id="pageResult">
+    <div class="success-card">
+      <div class="check">✅</div>
+      <h2>方案提交成功！</h2>
+      <div class="msg" id="resultGroupInfo"></div>
+    </div>
+
+    <div class="analysis-card">
+      <h3>🤖 AI 智能分析反馈</h3>
+      <div class="overall-score">
+        <div class="big-score" id="overallScoreDisplay">--</div>
+        <div class="label">综合评分（满分100）</div>
+      </div>
+      <div id="analysisContent"></div>
+    </div>
+
+    <div class="btns-row">
+      <button class="btn-primary" onclick="switchPage('rubric')">📐 查看评价量表</button>
+      <button class="btn-secondary" onclick="switchPage('submit')">✏️ 继续提交（另一组）</button>
+    </div>
+  </div>
+
+  <!-- ==================== 任务三：行动方案介绍 ==================== -->
+  <div class="page" id="pageActionIntro">
+    <div class="hero action">
+      <h1>《云岭村乡村共创行动方案》</h1>
+      <div class="hero-sub">综合任务 · 融合黄文秀群众工作法与竺可桢地理分析 · 提交截止：下节正式课前</div>
+      <div class="deadline">⏰ 提交截止：下节正式课前</div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item action">
+        <div class="task-num action">1</div>
+        <div class="task-content"><div class="q action">群众需求分析</div><div class="hint action">运用黄文秀工作方法，分析云岭村127户种植户的真实需求和核心痛点</div></div>
+      </div>
+      <div class="task-item action">
+        <div class="task-num action">2</div>
+        <div class="task-content"><div class="q action">地理条件分析</div><div class="hint action">结合竺可桢地理智库数据，分析地形、气候、水文、土地对产业发展的约束与机遇</div></div>
+      </div>
+      <div class="task-item action">
+        <div class="task-num action">3</div>
+        <div class="task-content"><div class="q action">产业发展路径</div><div class="hint action">综合群众诉求与地理条件，设计1-2条切实可行的产业发展路径</div></div>
+      </div>
+      <div class="task-item action">
+        <div class="task-num action">4</div>
+        <div class="task-content"><div class="q action">群众参与方式</div><div class="hint action">设计让群众真正参与建设的具体机制（合作社、入股、众筹等）</div></div>
+      </div>
+      <div class="task-item action">
+        <div class="task-num action">5</div>
+        <div class="task-content"><div class="q action">可持续发展考虑</div><div class="hint action">从生态保护、市场风险、代际传承等角度规划长期可持续方案</div></div>
+      </div>
+    </div>
+
+    <button class="btn-primary action" onclick="switchPage('actionSubmit')">📝 开始撰写行动方案</button>
+  </div>
+
+  <!-- ==================== 任务三：行动方案提交表单 ==================== -->
+  <div class="page" id="pageActionSubmit">
+    <div class="form-section action">
+      <h2 class="action">📝 提交《云岭村乡村共创行动方案》</h2>
+      <div class="form-row">
+        <div class="form-group"><label class="action"><span class="required">*</span> 小组名称</label><input class="action" id="actGroupName" placeholder="例如：第一小组 / 云岭振兴组"></div>
+        <div class="form-group"><label class="action"><span class="required">*</span> 组员姓名</label><input class="action" id="actMembers" placeholder="例如：张三、李四、王五"></div>
+      </div>
+      <div class="form-group"><label class="action"><span class="required">*</span> 模块1：群众需求分析</label><textarea class="action" id="aq1" placeholder="运用黄文秀"从群众中来"的方法，分析云岭村127户种植户当前最迫切的需求是什么？村民对产业变革的态度是怎样的？如何赢得他们的信任？..."></textarea></div>
+      <div class="form-group"><label class="action"><span class="required">*</span> 模块2：地理条件分析</label><textarea class="action" id="aq2" placeholder="结合竺可桢地理智库数据（海拔620-940m、坡度23°、喀斯特地貌、降雨1380mm、季节错配等），分析这些自然条件对产业发展构成了哪些约束？又蕴藏了哪些机遇？..."></textarea></div>
+      <div class="form-group"><label class="action"><span class="required">*</span> 模块3：产业发展路径</label><textarea class="action" id="aq3" placeholder="综合前两个模块的分析，设计1-2条具体可行的产业发展路径。每条路径包括：目标定位、实施步骤、预期收益、风险预判。说明为什么这条路适合云岭村的实际情况..."></textarea></div>
+      <div class="form-group"><label class="action"><span class="required">*</span> 模块4：群众参与方式</label><textarea class="action" id="aq4" placeholder="设计群众参与的具体机制：组织模式（合作社/股份制/其他）、利益分配方案、决策机制（村民议事会/投票/其他）、如何确保最困难的23户也能参与并受益..."></textarea></div>
+      <div class="form-group"><label class="action"><span class="required">*</span> 模块5：可持续发展考虑</label><textarea class="action" id="aq5" placeholder="从生态保护（防止坡地水土流失）、市场风险（价格波动应对）、基础设施（道路+水利）、人才培养（吸引青年返乡）、代际公平等角度规划..."></textarea></div>
+      <div class="form-group"><label class="action">小组自评分数（1-10分）</label><input class="action" id="actSelfScore" type="number" min="1" max="10" value="7" style="width:120px;"></div>
+      <div class="btns-row">
+        <button class="btn-primary action" onclick="submitTask3()">🚀 提交行动方案并获取AI分析</button>
+        <button class="btn-secondary action" onclick="switchPage('actionIntro')">← 返回任务说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 任务三：提交结果 ==================== -->
+  <div class="page" id="pageActionResult">
+    <div class="success-card action">
+      <div class="check">✅</div>
+      <h2 class="action">行动方案提交成功！</h2>
+      <div class="msg action" id="actionResultGroupInfo"></div>
+    </div>
+
+    <div class="analysis-card action">
+      <h3 class="action">🚀 AI 综合分析反馈</h3>
+      <div class="overall-score">
+        <div class="big-score action" id="actionOverallScoreDisplay">--</div>
+        <div class="label">综合评分（满分100）</div>
+      </div>
+      <div id="actionAnalysisContent"></div>
+    </div>
+
+    <div class="btns-row">
+      <button class="btn-primary action" onclick="switchPage('rubric')">📐 查看评价量表</button>
+      <button class="btn-secondary action" onclick="switchPage('actionSubmit')">📝 继续提交（另一组）</button>
+    </div>
+  </div>
+
+  <!-- ==================== 评价量表 ==================== -->
+  <div class="page" id="pageRubric">
+    <div class="hero">
+      <h1>📐 评价量表</h1>
+      <div class="hero-sub">各任务成果评分标准与要求 · 请仔细阅读后提交方案</div>
+    </div>
+
+    <!-- 任务一 评价量表 -->
+    <div class="section-divider t1">📋 任务一 · 群众工作微方案 评价标准</div>
+    <div class="analysis-card">
+      <h3>📊 评分维度总览</h3>
+      <div class="best-summary">
+        <div class="dim-card"><div class="dim-name">问题识别</div><div class="dim-score">Q1</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">原因分析</div><div class="dim-score">Q2</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">理论理解</div><div class="dim-score">Q3</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">方法应用</div><div class="dim-score">Q4</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">方案设计</div><div class="dim-score">Q5</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">理论深度</div><div class="dim-score">Q6</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="analysis-card">
+      <h3>📝 逐题评分标准</h3>
+      <div class="analysis-item">
+        <div class="q-label">Q1: 当前群众问题分析 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：结合云岭村实际资料，从"经济问题"（柑橘滞销、价格低）和"信任问题"（收购商跑路、项目失败历史）两个维度进行具体分析。优秀回答需引用具体数据（如60%滞销率、收购价被压至0.6元/斤），并区分不同类型农户的核心诉求。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label">Q2: 群众不信任的原因 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：从历史层面（过去调研"来而不为"）、经济层面（产业失败赔钱）、认知层面（信息不对称）三个层次分析深层原因。关键论点："信任不是开会开出来的，而是一起干活干出来的"。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label">Q3: 黄文秀做法体现群众观点 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：从"相信群众、依靠群众"角度，具体引用黄文秀的做法（走访195户贫困户、手绘民情地图、让村民参与修路规划、先树典型再推广）。将具体行为与"人民是历史的创造者"这一理论概念对应。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label">Q4: 黄文秀做法体现群众路线 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：清晰阐述"从群众中来，到群众中去"的完整闭环——①深入调研收集诉求→②把诉求转化为具体行动（修路、卖砂糖橘、联系医院）→③在实践中调整方案让群众参与决策。引用具体案例支撑。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label">Q5: 如何发动群众参与建设 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：提出至少3条具体可行的措施，每条说明"做什么"+"为什么这样做"。可参考思路：入户走访建立信任→院坝会让群众讨论→建立合作社/入股模式→先试点再推广→定期回访制度。体现"与群众一起干"而非"替群众做决定"。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label">Q6: 人民群众为何能推动乡村建设 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label">💬 成果要求：从历史唯物主义（人民群众是物质财富和精神财富的创造者、社会变革的决定性力量）和现实案例（黄文秀在百坭村/云岭村127户种植户）两个角度论证。核心观点：关键是把分散个体凝聚成有组织的集体力量。</div>
+      </div>
+    </div>
+
+    <!-- 任务二 评价量表 -->
+    <div class="section-divider t2">🌍 任务二 · 地理诊断卡 评价标准</div>
+    <div class="analysis-card geo">
+      <h3 class="geo">📊 评分维度总览</h3>
+      <div class="best-summary">
+        <div class="dim-card"><div class="dim-name">综合分析</div><div class="dim-score">Q1</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">因果推理</div><div class="dim-score">Q2</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">风险认知</div><div class="dim-score">Q3</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">辩证思维</div><div class="dim-score">Q4</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="analysis-card geo">
+      <h3 class="geo">📝 逐题评分标准</h3>
+      <div class="analysis-item">
+        <div class="q-label geo">Q1: 云岭村面临哪些自然条件限制 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label geo">💬 成果要求：从地形（海拔620-940m、坡度23°、山地82%）、气候（降雨1380mm、5-9月占72%、季节错配）、土地（户均2.3亩、分散5-7处、60%三级以下）、水文（喀斯特渗漏、灌溉不足）四个维度系统分析。使用具体数据支撑，说明各限制如何相互交织。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label geo">Q2: 地形如何影响交通与产业 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label geo">💬 成果要求：建立"地形→道路→物流→产业"的完整因果传导链。使用数据：运输成本占售价35%、年均中断8次、仅1条硬化路、穿越3处滑坡体。分析运输不可靠如何从根本上破坏产业可持续性。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label geo">Q3: 为什么山区乡村发展风险更高 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label geo">💬 成果要求：从风险叠加（地质+气象+水文+交通+市场五重风险）、连锁传导（暴雨→滑坡→断道→腐烂→降价）、抗风险能力弱（单一生命线无冗余、无仓储冷链）三个层面论证。指出"山区风险高不仅是天灾多，更是底子薄"。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label geo">Q4: 自然环境与乡村发展之间的关系 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label geo">💬 成果要求：运用竺可桢"因地制宜"理念，辩证分析三层关系——约束关系（自然条件规定发展边界）、选择关系（同一环境可选不同路径）、共生关系（人类活动反作用于自然）。核心论点："自然环境不是宿命而是条件，乡村振兴不是战胜自然而是顺应自然"。</div>
+      </div>
+    </div>
+
+    <!-- 任务三 评价量表 -->
+    <div class="section-divider t3">🚀 任务三 · 乡村共创行动方案 评价标准</div>
+    <div class="analysis-card action">
+      <h3 class="action">📊 评分维度总览</h3>
+      <div class="best-summary">
+        <div class="dim-card"><div class="dim-name">群众导向</div><div class="dim-score">Q1</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">地理素养</div><div class="dim-score">Q2</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">产业设计</div><div class="dim-score">Q3</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">参与机制</div><div class="dim-score">Q4</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+        <div class="dim-card"><div class="dim-name">可持续性</div><div class="dim-score">Q5</div><div class="dim-bar"><div class="dim-bar-fill" style="width:100%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="analysis-card action">
+      <h3 class="action">📝 逐题评分标准</h3>
+      <div class="analysis-item">
+        <div class="q-label action">Q1: 群众需求分析 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label action">💬 成果要求：运用黄文秀入户走访方法，对127户种植户进行分层分析（大户/中等户/困难户），明确不同群体的核心诉求排序（销路>价格>灌溉>道路）。设计信任建立策略，体现"从群众中来"的工作理念。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label action">Q2: 地理条件分析 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label action">💬 成果要求：将地理条件分为"约束型"（坡度、水文、空间碎片化、交通）和"机遇型"（温差大→糖分积累、生态隔离→绿色认证、垂直多样性→错峰上市），引用竺可桢地理智库数据，体现"因地制宜"理念。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label action">Q3: 产业发展路径 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label action">💬 成果要求：设计1-2条具体可行的产业发展路径，每条包含：目标定位、实施步骤（分阶段）、预期收益（量化）、风险预判及应对。体现从"对抗自然"转向"顺应自然"的理念转变。优秀方案需包含品牌化、渠道创新等要素。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label action">Q4: 群众参与方式 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label action">💬 成果要求：设计具体的组织模式（合作社/股份制/联合社）、利益分配方案（如"租金+薪金+股金"三金模式）、决策机制（社员大会一人一票）、困难群众兜底保障方案。核心原则：群众是主体而非被动帮扶对象。</div>
+      </div>
+      <div class="analysis-item">
+        <div class="q-label action">Q5: 可持续发展考虑 <span class="score-tag score-high">满分标准</span></div>
+        <div class="a-label action">💬 成果要求：从生态（水土保持、有机种植）、经济（风险基金、产业链延伸、农业保险）、人才（青年返乡、代际传承）、制度（财务公开、换届选举、第三方审计）四个维度系统规划。体现"不仅今天能挣钱，十年后依然兴旺"的长远眼光。</div>
+      </div>
+    </div>
+
+    <div class="analysis-card" style="text-align:center;">
+      <h3>📋 成果提交总体要求</h3>
+      <div style="font-size:18px;color:#D8C0A0;line-height:2;text-align:left;">
+        <p>✅ <strong>完整性</strong>：每题均需作答，不可留空。回答字数建议在100字以上（任务三建议200字以上）。</p>
+        <p>✅ <strong>数据支撑</strong>：引用云岭村具体数据（海拔、坡度、户数、价格等），避免空泛论述。</p>
+        <p>✅ <strong>理论结合</strong>：任务一需引用黄文秀具体做法，任务二需运用竺可桢地理理念，任务三需融合两者。</p>
+        <p>✅ <strong>方案可行</strong>：提出的措施需具体、可操作，说明"做什么、为什么、怎么做"。</p>
+        <p>✅ <strong>团队协作</strong>：以小组为单位提交，标注组员姓名，鼓励分工合作、集体讨论。</p>
+      </div>
+    </div>
+  </div>
+
+<!-- 详情弹窗 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+// ===== 数据存储 =====
+function loadSubs() {
+  try { return JSON.parse(localStorage.getItem('villager_task_subs') || '[]'); }
+  catch(e) { return []; }
+}
+function saveSubs(subs) { localStorage.setItem('villager_task_subs', JSON.stringify(subs)); }
+
+function loadGeoSubs() {
+  try { return JSON.parse(localStorage.getItem('villager_geo_subs') || '[]'); }
+  catch(e) { return []; }
+}
+function saveGeoSubs(subs) { localStorage.setItem('villager_geo_subs', JSON.stringify(subs)); }
+
+function loadActionSubs() {
+  try { return JSON.parse(localStorage.getItem('villager_action_subs') || '[]'); }
+  catch(e) { return []; }
+}
+function saveActionSubs(subs) { localStorage.setItem('villager_action_subs', JSON.stringify(subs)); }
+
+// ===== 预设示例数据 — 任务一 =====
+var SAMPLE_SUBS = [
+  {
+    id: 1716000001000, groupName: '云岭振兴组', members: '陈思远、林小禾、王大勇、赵雨晴',
+    answers: [
+      '云岭村村民当前面临三大核心问题：一是柑橘产业滞销，去年11月至今年2月超过60%的果子烂在地里，收购价从正常的2.5元/斤被压至0.6元/斤；二是村民对干部和外来团队严重缺乏信任，先后3批收购商违约跑路，加上过去推行的产业项目失败赔钱，导致村民对任何新方案都持怀疑态度；三是基础设施薄弱，村道未硬化，运输成本高。村民的核心诉求是：找到稳定的柑橘销路、获得公平的收购价格、希望干部能真正了解他们的实际困难而非走过场。',
+      '村民对实践团不信任的深层原因有三：第一，历史创伤——过去也有调研团队来过，但最后都没有实质结果；第二，经济风险恐惧——之前推行的产业项目让部分村民赔了钱；第三，信息不对称——实践团是外来者，村民不了解我们的背景和诚意。归根结底，信任不是开会开出来的，而是一起干活干出来的。',
+      '黄文秀书记的做法深刻体现了群众观点。首先，她坚信群众最了解自己的土地——修路时让村民参与路线规划；其次，推广砂糖橘产业时没有强迫，而是先让愿意尝试的种植户看到收益；再次，反复入户听取每一户的意见和困难。这些都体现了"人民是历史的创造者"这一核心理念。',
+      '黄文秀的做法诠释了"从群众中来，到群众中去"：第一步走访195户贫困户，手绘民情地图收集诉求；第二步帮助村民卖砂糖橘、联系医院、争取修路资金，把诉求转化为行动；第三步在实践中调整方案，让村民参与决策。这一完整闭环体现了群众路线的科学方法论。',
+      '我会从五个方面发动群众：第一，先建立信任基础，逐户走访帮村民干农活；第二，召开院坝会让村民自己讨论柑橘产业出路；第三，建立"村民入股+按劳分配"合作社模式；第四，先找三五户试点做出成效再推广；第五，建立定期回访制度确保不半途而废。',
+      '从历史唯物主义看，人民群众是物质财富和精神财富的创造者，是变革社会的决定性力量。从现实案例看，黄文秀不是靠个人能力去改变村庄，而是唤醒了村民的主体意识，让195户贫困户从"要我脱贫"变成"我要脱贫"。云岭村柑橘产业问题本质上是要把127户种植户组织起来，让他们成为产业振兴的主人。'
+    ],
+    scores: [88, 92, 90, 88, 90, 90], totalScore: 90, analysis: [], time: '2026/5/20 14:30:00'
+  },
+  {
+    id: 1716000002000, groupName: '初心实践团', members: '李文博、张晓芳、刘志强',
+    answers: [
+      '云岭村村民的主要问题是柑橘卖不出去，价格被压得很低。村民对来帮忙的人不信任，因为之前有人来调研但没结果。还有几批收购商跑路了，让村民损失很大。',
+      '村民不信任实践团主要是以前被骗过。之前也有人来调研说要帮忙，但最后什么都没改变。还有产业项目让村民赔了钱，所以他们现在对谁都不太相信。',
+      '黄文秀相信群众，她到村里后没有直接下命令，而是先去走访每一户了解情况。她还依靠群众来修路，让村民参与规划路线。',
+      '黄文秀从群众中收集意见，她走访了195户贫困户了解真实情况。然后根据这些意见帮助村民卖橘子、修路、联系医院，把群众的意见变成实际行动。',
+      '我会这样做：第一，先去和村民聊天了解他们的想法；第二，找一些愿意配合的村民先试试我们的方案；第三，让看到效果的村民帮忙宣传。',
+      '人民群众是历史的创造者。乡村建设要靠农民自己，外来的帮助只是辅助。百坭村的例子说明，当群众被真正发动起来后，他们能创造出很大的力量。'
+    ],
+    scores: [65, 62, 72, 70, 60, 68], totalScore: 66, analysis: [], time: '2026/5/20 16:15:00'
+  },
+  {
+    id: 1716000003000, groupName: '青春助农队', members: '吴佳琪、杨志远、黄思涵、马小宇、郑一诺',
+    answers: [
+      '云岭村面临经济和信任两个维度的问题。经济方面：127户依赖柑橘，但60%滞销腐烂，收购价从2.5元被压至0.6元/斤。信任方面：收购商跑路、产业项目失败的历史使村民产生防御心理。信息闭塞也使村民无法直接对接终端客户。核心诉求是可持续、公平的产业机制。',
+      '不信任是结构性问题：第一层是经验层面——过去调研"来而不为"造成承诺疲劳；第二层是经济层面——产业失败让村民承担了实际损失；第三层是认知层面——村民长期信息弱势。信任危机的本质是风险分配不均。',
+      '黄文秀的群众观点体现在三个层面：认知上认为"不了解群众担心什么，方案再好也推不动"；情感上帮村民扫院子、掰玉米用行动赢得认同；实践上让村民参与修路规划等决策。三者环环相扣构成完整群众观点。',
+      '黄文秀的群众路线分三个环节：深入调研（走两小时山路去山上贫困户家，第三次才听到真话）、科学决策（整理195户民情地图）、推动落实（推砂糖橘、修路、医疗）。关键做法是先树典型再推广，用效果说服群众。',
+      '分四阶段：融入期（1-2周入户走访建立信任）、共议期（组织院坝会+参观成功合作社）、试点期（选5-8户做电商直销试点）、推广期（让试点户亲身讲述带动更多）。所有重大决策由合作社成员投票决定。',
+      '理论层面：历史唯物主义认为人民群众是社会发展的决定性力量，农民对土地最熟悉、对产业最有感情。现实层面：黄文秀的成功在于让195户相信脱贫是自己的事。云岭村127户种植户力量远超任何外部团队，关键是把分散个体凝聚成有组织的集体。'
+    ],
+    scores: [82, 85, 88, 86, 88, 90], totalScore: 87, analysis: [], time: '2026/5/21 09:45:00'
+  }
+];
+
+// ===== 预设示例数据 — 任务二 =====
+var SAMPLE_GEO_SUBS = [
+  {
+    id: 1716100001000, groupName: '云岭振兴组', members: '陈思远、林小禾、王大勇、赵雨晴',
+    answers: [
+      '云岭村面临四大自然条件限制。地形上：海拔620-940米，平均坡度23°，山地占82%，仅18%谷地可利用，坡耕地无法机械化耕作，人工成本是平原3倍以上。气候上：年均温17.8°C、积温5480°C满足贡柑需求，但1380mm年降雨中72%集中在5-9月，秋冬柑橘需水关键期反而干旱，"总量够、分配错"是核心矛盾。土地上：户均仅2.3亩耕地却分散在5-7处地块，60%为三级以下贫瘠坡地，无法规模经营。水文上：喀斯特地貌导致地表水渗漏严重，无系统灌溉设施，完全依赖自然降雨。这四重限制相互交织，构成了云岭村"地无三尺平、水无三日蓄、田无三亩整"的自然本底。',
+      '地形对交通与产业的影响存在清晰的传导链条。第一环"地形→道路"：山地坡度大、喀斯特岩层破碎，通村路仅1条硬化路且穿越3处古滑坡体，建设成本是平原的5倍，年均中断8次。第二环"道路→物流"：运输成本占售价35%，为平原3倍，中断期间柑橘无法外运直接腐烂。第三环"物流→产业"：高物流成本削弱了价格竞争力，中间商借机压价（从2.5元压至0.6元/斤），果农越种越亏。第四环"地形→生产"：坡耕地无法使用机械，全靠人力，生产效率极低。这四个环节环环相扣，形成了"地形困锁→物流卡喉→产业失血"的恶性循环。',
+      '山区乡村发展风险更高，根源在于三个"叠加"。一是风险类型叠加：平原地区可能只面临市场风险，而云岭村同时面临地质风险（滑坡6处隐患点）、气象风险（年均14天暴雨）、水文风险（喀斯特缺水）、交通风险（道路中断8次/年）、市场风险（价格被压至0.6元）。二是风险联动叠加：暴雨触发滑坡→滑坡阻断道路→道路中断导致柑橘腐烂→腐烂引发恐慌性降价，这是典型的风险传导链。三是抗风险能力弱：平原地区路网密集有替代方案，云岭村仅1条生命线无冗余；平原地区有仓储冷链缓冲，云岭村柑橘摘下后必须在3-5天内运出。多重风险叠加在脆弱的基础设施之上，任何一环出问题都是系统性危机。',
+      '自然环境与乡村发展之间不是"决定论"的关系，而是"约束与适应"的辩证关系。竺可桢先生早就指出"因地制宜"是科学态度——自然条件不直接决定发展结果，但规定了发展的边界和代价。云岭村的案例表明：山地地形不是贫困的"原因"，但会放大交通成本、限制规模经营、推高风险概率。关键不在于改变自然，而在于改变我们利用自然的方式。平原适合规模化、标准化的产业模式，山区则需要走"精品化、小规模、高附加值"路线——利用昼夜温差大提升柑橘甜度，利用山地生态优势打造绿色品牌，这才是"顺应自然"的智慧。人类不能无视自然规律，但可以学会与自然和谐共生。'
+    ],
+    scores: [92, 90, 92, 90], totalScore: 91, analysis: [], time: '2026/5/22 10:20:00'
+  },
+  {
+    id: 1716100002000, groupName: '初心实践团', members: '李文博、张晓芳、刘志强',
+    answers: [
+      '云岭村自然条件不太好。山多平地少，种地不方便。雨水虽然多但集中在夏天，冬天缺水。每家的地都很分散。',
+      '地形不好所以路不好修，下雨天经常断。路断了橘子就运不出去，运费也很贵，占了卖价的很大一部分。机器也用不了，只能靠人干活。',
+      '山区风险比较高，因为会滑坡，路会断，水不够用。这些都会影响种柑橘。出了问题不好解决。',
+      '自然环境会影响农村的发展，条件好的地方发展快，条件差的地方发展慢。所以要改善自然条件，修路修水。'
+    ],
+    scores: [84, 86, 84, 86], totalScore: 85, analysis: [], time: '2026/5/22 14:30:00'
+  },
+  {
+    id: 1716100003000, groupName: '青春助农队', members: '吴佳琪、杨志远、黄思涵、马小宇、郑一诺',
+    answers: [
+      '云岭村的自然条件可以用"有利有弊、弊大于利"来概括。有利方面：亚热带季风气候年积温5480°C、日照1580h、无霜期310天，光热资源完全满足贡柑生长需求，且昼夜温差大利于糖分积累。不利方面是系统性的：地形上82%为山地、平均坡度23°，仅有18%的谷地适合耕作和建设；水文上喀斯特岩溶裂隙使地表水大量渗漏，"天上下雨地下漏"；气候上降雨季节错配——72%雨水集中在5-9月，导致"夏涝秋旱"；土地上户均2.3亩分散5-7处，无法形成规模。这些限制条件不是孤立存在的，而是通过"水-土-气-地"四个子系统互相强化，形成了不利于现代农业发展的自然本底。',
+      '地形对交通与产业的影响不是线性的，而是放大型的。通村路穿越3处滑坡体——这是地形给予的"先天性缺陷"；雨季暴雨触发滑坡阻断道路——这是气候与地形的"耦合打击"；仅1条路无备选——这是空间约束导致的"零冗余"；运输成本35%、中断导致腐烂——这是前三个因素在产业端的"共振效应"。更深层的影响是：交通不可靠→收购商不愿进村→果农只能接受中间商压价（0.6元/斤）→产业收益低→年轻人外出务工→劳动力短缺→果园荒废。这个链条表明，地形不是简单地"造成交通不便"，而是通过削弱市场接入能力，从根本上破坏了产业的可持续性。',
+      '山区乡村发展风险更高，本质上是三个效应叠加的结果。第一是"暴露效应"：云岭村位于地质灾害易发区（6处滑坡隐患+4条山洪沟+喀斯特塌陷），自然致灾因子密度远高于平原。第二是"放大效应"：平原地区道路中断可以绕行，山区只有一条路，中断即孤岛；平原柑橘可以仓储，山区无冷链，中断即腐烂——同样的灾害在山区造成的损失被成倍放大。第三是"贫困-风险陷阱"：低收益→无钱修路修水→灾害损失更大→收益更低，形成恶性循环。这三个效应说明，山区发展的高风险不仅是"天灾多"，更是"底子薄"。破局的关键不是消灭自然风险，而是通过改善基础设施来降低灾害的放大效应。',
+      '竺可桢先生一生倡导的"求是"精神告诉我们：研究自然环境与乡村发展的关系，首先要尊重事实，然后才能发现规律。云岭村的案例揭示了三层关系：第一层是"约束关系"——坡度决定了能否机械化、喀斯特决定了蓄水难度、降雨分配决定了灌溉需求，这些都是硬约束，不能违背；第二层是"选择关系"——同样的山地环境，可以选规模化（注定失败），也可以选精品化（利用温差优势），发展路径是人选的不是自然定的；第三层是"共生关系"——人类活动反过来影响自然，>25°陡坡开垦加剧水土流失，而退耕还林、等高种植则可以改善生态。归根结底，自然环境不是宿命，而是条件；乡村振兴不是"战胜自然"，而是"读懂自然、顺应自然、保护自然"。'
+    ],
+    scores: [72, 68, 72, 68], totalScore: 70, analysis: [], time: '2026/5/23 08:45:00'
+  }
+];
+
+// ===== 预设示例数据 — 任务三 =====
+var SAMPLE_ACTION_SUBS = [
+  {
+    id: 1716200001000, groupName: '云岭振兴组', members: '陈思远、林小禾、王大勇、赵雨晴', selfScore: 8,
+    answers: [
+      '通过走访127户种植户，我们发现群众的核心需求分三层：最底层是生存需求——60%柑橘滞销，23户面临返贫，他们最迫切需要的是"把橘子卖出去，卖个公道价"；中间层是信任需求——先后3批收购商跑路、过去产业项目失败，村民对外来者普遍持"先看看再说"的态度；最高层是发展需求——部分年轻种植户希望学习电商和技术，但缺乏渠道。黄文秀的经验告诉我们：赢得信任不能靠开会，必须一家一户走访，先帮群众解决最紧迫的实际困难，再谈产业发展。具体来说，我们计划用2周时间逐户走访，绘制"民情地图"，标注每户的具体困难（滞销量、债务情况、劳动力状况），然后召开院坝会让群众自己讨论出路。只有群众感受到我们是"来干活的"而不是"来调研的"，信任才会建立。',
+      '竺可桢先生说过"因地制宜"是科学态度。云岭村的地理条件可以概括为"有利有弊、弊大于利但可转化"。有利条件：年均温17.8°C、≥10°C积温5480°C、日照1580h、无霜期310天——这些数据说明光热资源完全满足贡柑生长，且昼夜温差大（约10°C）利于糖分积累，这是发展高品质柑橘的天然优势。不利条件：地形上82%为山地、平均坡度23°，导致耕地碎片化（户均2.3亩分散5-7处）无法规模化；水文上喀斯特渗漏使得"天上下雨地下漏"，灌溉无保障；气候上1380mm降雨72%集中在5-9月，秋冬干旱恰逢柑橘需水关键期；交通上仅1条硬化路穿越3处滑坡体，年均中断8次。关键认知：地形条件决定了不能走"平原式大规模型"路线，而应走"山地精品化"路线——利用温差优势提升品质，利用生态优势打造绿色品牌。',
+      '综合群众需求与地理条件，我们提出"双轮驱动"产业发展路径。路径一：贡柑精品化升级。利用昼夜温差大的优势定位高端市场，通过土壤改良（增施有机肥、pH调节）、节水灌溉（蓄水池+滴灌）、品牌打造（"云岭高山贡柑"地理标志）三步走，将均价从0.6元/斤提升至3-5元/斤。路径二：林下经济补充。利用坡地茶园和山林资源发展林下养鸡、蜂蜜和中药材（如黄精），形成"柑橘+林下"的复合产业格局，分散单一品种风险。实施步骤：第1年试点10-15户精品果园+电商直销；第2年扩大到50户并注册品牌；第3年覆盖全村并建设分拣包装中心。预期每户年均增收8000-15000元。风险预判：市场价格波动（应对：签订保底收购协议）、极端气候（应对：农业保险+蓄水设施）、品质管控（应对：统一技术标准）。',
+      '群众参与不能停留在"征求意见"层面，必须让群众成为产业发展的主体和受益者。我们设计了三层参与机制：第一层——组织形式，成立"云岭柑橘专业合作社"，采用"农户入股+按劳分配"模式，每户以果园面积折算股份，年终按股分红+按劳取酬，确保多劳多得。第二层——决策机制，设立"社员大会+理事会+监事会"三级治理，重大事项（如定价、投资、分配方案）由社员大会一人一票表决，防止"大户说了算"。第三层——兜底保障，专门为23户困难家庭设计"托管种植"方案：合作社统一管理其果园，保底分红+优先务工，确保"最困难的群众也能参与并受益"。初期选择5-8户愿意尝试的种植户作为示范，用效果带动观望者加入。这完全符合黄文秀"先树典型再推广"的工作方法。',
+      '可持续发展需要从四个维度系统规划。生态维度：坡度>15°的果园必须推行等高种植和鱼鳞坑，减少水土流失；推广有机肥替代化肥，保护喀斯特地区脆弱的土壤生态；在冲沟和溪流两侧设置植被缓冲带。经济维度：建立"价格风险基金"——每年从合作社收益中提取10%作为风险储备金，应对市场价格波动；发展初加工（果干、果酱）延长产业链，降低鲜果滞销风险。基础设施维度：争取资金硬化第二条通村路作为备选路线；修建200m³以上蓄水池配合滴灌系统解决季节性缺水。人才维度：设立"青年返乡创业基金"，支持3-5名年轻人学习电商运营和农业技术，确保产业后继有人。我们的核心理念是"不仅今天能挣钱，十年后云岭村依然山清水秀、产业兴旺"。'
+    ],
+    scores: [82, 82, 83, 82, 81], totalScore: 82, analysis: [], time: '2026/5/24 09:30:00'
+  },
+  {
+    id: 1716200002000, groupName: '初心实践团', members: '李文博、张晓芳、刘志强', selfScore: 6,
+    answers: [
+      '云岭村村民的主要问题是柑橘卖不出去。很多人种了柑橘但卖不掉，价格也很低。我们需要帮他们找销路。村民对外来的人不太信任，因为以前有人来调研但后来没结果。所以要先和村民搞好关系。',
+      '云岭村山多平地少，路也不好走。下雨多但是集中在夏天，冬天又没水。地也不够多，每家的地都分散在不同的地方。这些都不太好。但气候暖和适合种橘子。',
+      '我们觉得可以发展柑橘产业，把橘子卖到城里去。还可以搞旅游，让城里人来农村玩。或者建一个加工厂把橘子做成果汁。',
+      '要建立合作社，让村民一起干。还要让村民投票决定重要的事情。我们会先找一些愿意配合的村民试试。',
+      '要保护环境，不能破坏山林。多种树，少用化肥。修好路和水库。让年轻人回来工作。'
+    ],
+    scores: [76, 75, 77, 76, 76], totalScore: 76, analysis: [], time: '2026/5/24 11:15:00'
+  },
+  {
+    id: 1716200003000, groupName: '青春助农队', members: '吴佳琪、杨志远、黄思涵、马小宇、郑一诺', selfScore: 8,
+    answers: [
+      '我们对云岭村127户种植户进行了分层分析。第一类（约45户）：柑橘种植大户（3亩以上），有一定资金积累，最关心销路和价格，愿意尝试新事物，是产业升级的"先行者"。第二类（约59户）：中等种植户（1-3亩），处于盈亏边缘，态度谨慎但可被带动，"看到效果就愿意跟"。第三类（约23户）：困难户（<1亩或缺乏劳动力），面临返贫风险，最需要兜底保障。群众核心诉求排序：①稳定的销售渠道（87%提及）②公平的收购价格（76%）③灌溉用水保障（62%）④道路通畅（58%）。赢得信任的关键策略：第一步——实干取信，用2周帮村民干农活、联系销路、解决具体困难；第二步——让利示范，首批试点让种植户零风险参与（保底收购+超额分成）；第三步——透明运营，合作社账目公开、定期社员大会。这借鉴了黄文秀"先帮他们扫院子、掰玉米，第三次才听到真话"的渐进式信任建立法。',
+      '我们将地理条件分为"约束型"和"机遇型"两类进行系统分析。约束型条件：①坡度约束——23°平均坡度使82%土地无法机械化，人工成本是平原3倍；②水文约束——喀斯特裂隙使地表水入渗率达40-60%，"降雨1380mm但有效灌溉不足300mm"是核心矛盾；③空间约束——户均2.3亩分散5-7处，地块平均间距1.2km，无法实现规模效应；④交通约束——1条硬化路+3处滑坡体+年均中断8次=物流不可靠，运输成本占售价35%。机遇型条件：①温差资源——昼夜温差约10°C，是平原的2倍，贡柑可溶性固形物可达13-15%（平原仅10-12%），这是"高山甜"的不可替代优势；②生态壁垒——山地隔离减少病虫害传播，减少农药使用，具备绿色/有机认证的基础；③垂直多样性——海拔620-940m形成微气候梯度，可分层种植不同熟期品种延长供应期。核心结论：地理条件不是发展的"障碍"而是差异化的"资本"，关键在于从"对抗自然"转向"顺应自然、利用自然"。',
+      '基于群众需求和地理条件的交叉分析，我们提出"精品柑橘+X"产业发展组合策略。主引擎——贡柑精品化：定位中高端市场（目标价4-6元/斤），通过①品种优化（引进金秋砂糖橘等早熟品种错峰上市）②品质管控（统一施肥标准、糖度≥12°方可采摘）③品牌建设（"云岭高山贡柑"+溯源系统+绿色认证）④渠道创新（社区团购+企业定制+直播电商）四步实现价值跃升，目标使精品果比例从当前5%提升至60%。辅助引擎——林下种养循环：利用柑橘林下空间发展"果-鸡-蜂-药"立体农业，林下散养土鸡（亩均增收800元）+柑橘花蜂蜜（亩均增收400元）+林下黄精（3年采收亩均增收3000元），形成"以短养长"的现金流。风险对冲：三条路径互为补充——柑橘是主收入、林下经济是现金流、电商是渠道保障，任何一条路径受阻都不影响整体。预期3年后全村柑橘产业年产值从当前约80万元提升至350-500万元。',
+      '我们设计的群众参与体系包含"一个核心组织+三个关键机制"。核心组织：云岭村柑橘产业联合社——不同于传统合作社，联合社下设三个分社（种植分社、加工分社、销售分社），村民可根据自身优势选择加入一个或多个分社，实现"专业的人做专业的事"。三个关键机制：①利益连接机制——"租金+薪金+股金"三金模式：流转土地的农户收租金、参与种植的劳动力拿薪金、入社成员享股金分红，确保不同参与深度的群众都能受益；②能力建设机制——每月一次"田间学校"培训，由农技专家和电商达人授课，提升群众自我发展能力，这是"从输血到造血"的关键；③分红倾斜机制——合作社利润的60%按股分配、30%按劳分配、10%注入"困难群众互助金"，定向帮扶23户困难家庭。整个方案的设计原则来自黄文秀的启示：群众不是被动的"帮扶对象"，而是乡村建设的主体力量。',
+      '可持续发展不是方案的"附加章节"而是贯穿始终的红线。生态可持续：推行"三不一减"标准——不施禁用农药、不超坡度开垦（>25°退耕）、不焚烧秸秆，减少化肥用量30%以上；建设"柑橘+绿肥+养殖"循环农业系统，畜禽粪便堆肥还田。经济可持续：建立三级风险缓冲——①合作社10%利润作为价格风险基金（一级缓冲）②与3家以上收购商签订保底价协议分散市场风险（二级缓冲）③对接农业保险覆盖极端气候和病虫害（三级缓冲）。社会可持续：设立"青年归巢计划"——每年资助2名本村大学生学习农业相关专业，毕业后回村服务不少于3年；建立"老农人+新农人"传帮带机制，防止技术断层。制度可持续：合作社章程明确"换届选举、财务公开、第三方审计"三项制度，确保不论谁牵头都能规范运行。我们的目标是：10年后云岭村不仅有兴旺的产业，更有完善的制度、稳定的人才和健康的生态。'
+    ],
+    scores: [80, 81, 80, 79, 80], totalScore: 80, analysis: [], time: '2026/5/25 14:20:00'
+  }
+];
+
+// 为示例数据生成analysis
+(function initSamples() {
+  for (var s = 0; s < SAMPLE_SUBS.length; s++) {
+    var sub = SAMPLE_SUBS[s];
+    var items = [];
+    for (var j = 0; j < 6; j++) {
+      var result = analyzeTask1(j, sub.answers[j]);
+      items.push({ qIndex: j, answer: sub.answers[j], score: result.score, feedback: result.feedback });
+    }
+    sub.analysis = items;
+  }
+  for (var g = 0; g < SAMPLE_GEO_SUBS.length; g++) {
+    var gsub = SAMPLE_GEO_SUBS[g];
+    var gitems = [];
+    for (var k = 0; k < 4; k++) {
+      var gresult = analyzeGeo(k, gsub.answers[k]);
+      gitems.push({ qIndex: k, answer: gsub.answers[k], score: gresult.score, feedback: gresult.feedback });
+    }
+    gsub.analysis = gitems;
+  }
+  for (var a = 0; a < SAMPLE_ACTION_SUBS.length; a++) {
+    var asub = SAMPLE_ACTION_SUBS[a];
+    var aitems = [];
+    for (var b = 0; b < 5; b++) {
+      var aresult = analyzeTask3(b, asub.answers[b]);
+      aitems.push({ qIndex: b, answer: asub.answers[b], score: aresult.score, feedback: aresult.feedback });
+    }
+    asub.analysis = aitems;
+  }
+})();
+
+// ===== 页面切换 =====
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.topbar nav button').forEach(function(b) { b.classList.remove('active'); });
+
+  var pageId;
+  if (name === 'actionIntro') pageId = 'pageActionIntro';
+  else if (name === 'actionSubmit') pageId = 'pageActionSubmit';
+  else if (name === 'actionResult') pageId = 'pageActionResult';
+  else if (name === 'rubric') pageId = 'pageRubric';
+  else pageId = 'page' + name.charAt(0).toUpperCase() + name.slice(1);
+  var pageEl = document.getElementById(pageId);
+  if (pageEl) pageEl.classList.add('active');
+
+  var navId;
+  if (name === 'actionIntro') navId = 'navActionIntro';
+  else if (name === 'actionSubmit') navId = 'navActionSubmit';
+  else if (name === 'actionResult') navId = 'navActionIntro';
+  else if (name === 'rubric') navId = 'navRubric';
+  else navId = 'nav' + name.charAt(0).toUpperCase() + name.slice(1);
+  var navEl = document.getElementById(navId);
+  if (navEl) navEl.classList.add('active');
+
+  // 切换背景图: 任务一→调研图, 任务三→云岭村图, 其他→默认村庄图
+  var body = document.body;
+  body.classList.remove('bg-survey', 'bg-yunling');
+  if (name === 'intro' || name === 'submit' || name === 'result') {
+    body.classList.add('bg-survey');
+  } else if (name === 'actionIntro' || name === 'actionSubmit' || name === 'actionResult') {
+    body.classList.add('bg-yunling');
+  }
+
+  if (name === 'rubric') { /* rubric is static content */ }
+  window.scrollTo(0, 0);
+}
+
+// ===== AI 分析引擎 — 任务一 =====
+function analyzeTask1(qIndex, text) {
+  if (!text || text.length < 10) return { score: 0, feedback: '回答过于简略，需要补充更多内容。' };
+  var scores = { score: 0, feedback: '' };
+  var len = text.length;
+  switch(qIndex) {
+    case 0: scores.score = Math.min(88, 42 + Math.floor(len / 12)); if (text.indexOf('信任') !== -1 || text.indexOf('顾虑') !== -1 || text.indexOf('风险') !== -1) scores.score += 5; if (text.indexOf('具体') !== -1 || text.indexOf('案例') !== -1 || text.indexOf('例如') !== -1) scores.score += 5; scores.feedback = text.length > 60 ? '能够具体分析村民面临的实际问题，有针对性。建议进一步区分"经济问题"和"信任问题"两个维度。' : '对群众问题的基本把握正确，但可以更具体地结合云岭村的实际情况。'; break;
+    case 1: scores.score = Math.min(88, 42 + Math.floor(len / 12)); if (text.indexOf('历史') !== -1 || text.indexOf('过去') !== -1 || text.indexOf('以前') !== -1) scores.score += 5; if (text.indexOf('产业') !== -1 || text.indexOf('赔') !== -1 || text.indexOf('亏') !== -1) scores.score += 5; scores.feedback = text.length > 60 ? '深入分析了群众不信任的深层原因，理解了"信任不是开会开出来的"这一关键。' : '基本点到了不信任的表层原因，建议深入思考历史根源。'; break;
+    case 2: scores.score = Math.min(92, 42 + Math.floor(len / 10)); if (text.indexOf('走访') !== -1 || text.indexOf('入户') !== -1) scores.score += 5; if (text.indexOf('人民') !== -1 || text.indexOf('依靠') !== -1) scores.score += 5; scores.feedback = text.length > 60 ? '准确识别了黄文秀做法中的群众观点要素，能够将具体行为与理论概念对应。' : '需要在回答中明确提到黄文秀的具体做法（如入户走访、手绘民情地图等）。'; break;
+    case 3: scores.score = Math.min(92, 42 + Math.floor(len / 10)); if (text.indexOf('从群众中来') !== -1 || text.indexOf('到群众中去') !== -1) scores.score += 5; if (text.indexOf('调研') !== -1 || text.indexOf('倾听') !== -1) scores.score += 5; scores.feedback = text.length > 60 ? '清晰阐述了群众路线在黄文秀工作中的具体体现，理论联系实际做得较好。' : '建议引用"从群众中来，到群众中去"的具体环节来说明黄文秀是如何实践的。'; break;
+    case 4: scores.score = Math.min(92, 45 + Math.floor(len / 10)); if (text.indexOf('一起') !== -1 || text.indexOf('共同') !== -1 || text.indexOf('参与') !== -1) scores.score += 3; var parts = text.split(/[；;。\n]/); if (parts.length >= 4) scores.score += 5; scores.feedback = text.length > 80 ? '方案具体可行，体现了"与群众一起干"而非"替群众做决定"的正确思路。' : '建议提出至少3条具体措施，每条措施说明"做什么"和"为什么这样做"。'; break;
+    case 5: scores.score = Math.min(92, 44 + Math.floor(len / 12)); if (text.indexOf('历史') !== -1 && (text.indexOf('唯物') !== -1 || text.indexOf('创造') !== -1)) scores.score += 5; if (text.indexOf('云岭') !== -1 || text.indexOf('百坭') !== -1) scores.score += 3; scores.feedback = text.length > 60 ? '能够从理论和现实两个维度论证，体现了对"人民是历史创造者"的深入理解。' : '建议从历史唯物主义出发，再结合云岭村或百坭村的实际案例来论证。'; break;
+  }
+  scores.score = Math.min(95, Math.max(25, scores.score));
+  return scores;
+}
+
+// ===== AI 分析引擎 — 任务二（地理诊断） =====
+function analyzeGeo(qIndex, text) {
+  if (!text || text.length < 15) return { score: 0, feedback: '回答过于简略，请结合地理智库数据做更详细的分析。' };
+  var geoScore = { score: 0, feedback: '' };
+  var len = text.length;
+  switch(qIndex) {
+    case 0: // 自然条件限制
+      geoScore.score = Math.min(90, 42 + Math.floor(len / 12));
+      if (text.indexOf('地形') !== -1 || text.indexOf('坡度') !== -1 || text.indexOf('山地') !== -1) geoScore.score += 3;
+      if (text.indexOf('气候') !== -1 || text.indexOf('降雨') !== -1 || text.indexOf('降水') !== -1) geoScore.score += 3;
+      if (text.indexOf('土地') !== -1 || text.indexOf('碎片') !== -1 || text.indexOf('耕地') !== -1) geoScore.score += 3;
+      if (text.indexOf('水文') !== -1 || text.indexOf('喀斯特') !== -1 || text.indexOf('灌溉') !== -1) geoScore.score += 3;
+      geoScore.feedback = len > 80 ? '从地形、气候、土地、水文等多维度系统分析了自然限制条件，体现了综合地理思维。' : '建议从地形、气候、土地、水文四个维度逐一分析自然条件的限制作用。';
+      break;
+    case 1: // 地形影响交通与产业
+      geoScore.score = Math.min(90, 42 + Math.floor(len / 12));
+      if (text.indexOf('道路') !== -1 || text.indexOf('交通') !== -1 || text.indexOf('中断') !== -1) geoScore.score += 4;
+      if (text.indexOf('运输') !== -1 || text.indexOf('物流') !== -1 || text.indexOf('成本') !== -1) geoScore.score += 4;
+      if (text.indexOf('产业') !== -1 || text.indexOf('柑橘') !== -1 || text.indexOf('机械化') !== -1) geoScore.score += 4;
+      geoScore.feedback = len > 80 ? '清晰阐述了地形→交通→产业的传导链条，使用了具体数据支撑因果关系。' : '建议分析地形如何通过影响交通进而影响产业，形成完整的因果链。';
+      break;
+    case 2: // 山区风险更高
+      geoScore.score = Math.min(92, 42 + Math.floor(len / 12));
+      if (text.indexOf('叠加') !== -1 || text.indexOf('多重') !== -1 || text.indexOf('连锁') !== -1) geoScore.score += 4;
+      if (text.indexOf('滑坡') !== -1 || text.indexOf('山洪') !== -1 || text.indexOf('风险') !== -1) geoScore.score += 4;
+      if (text.indexOf('抗风险') !== -1 || text.indexOf('脆弱') !== -1 || text.indexOf('冗余') !== -1) geoScore.score += 4;
+      geoScore.feedback = len > 80 ? '深入分析了山区风险的叠加效应和连锁传导机制，点出了抗风险能力弱的关键。' : '建议从风险叠加、连锁传导和抗风险能力三个层面来论证。';
+      break;
+    case 3: // 自然环境与乡村发展关系
+      geoScore.score = Math.min(92, 44 + Math.floor(len / 12));
+      if (text.indexOf('因地制宜') !== -1 || text.indexOf('顺应') !== -1 || text.indexOf('适应') !== -1) geoScore.score += 4;
+      if (text.indexOf('约束') !== -1 || text.indexOf('条件') !== -1 || text.indexOf('边界') !== -1) geoScore.score += 4;
+      if (text.indexOf('和谐') !== -1 || text.indexOf('共生') !== -1 || text.indexOf('可持续') !== -1 || text.indexOf('尊重') !== -1) geoScore.score += 4;
+      geoScore.feedback = len > 80 ? '辩证地分析了自然环境的约束性与人类能动性的关系，体现了"因地制宜"的科学理念。' : '建议从"自然不是宿命而是条件"的角度辩证分析，引用竺可桢的因地制宜理念。';
+      break;
+  }
+  geoScore.score = Math.min(95, Math.max(25, geoScore.score));
+  return geoScore;
+}
+
+// ===== AI 分析引擎 — 任务三（行动方案） =====
+function analyzeTask3(qIndex, text) {
+  if (!text || text.length < 20) return { score: 0, feedback: '回答过于简略，需要结合云岭村实际情况展开详细论述。' };
+  var actScore = { score: 0, feedback: '' };
+  var len = text.length;
+  switch(qIndex) {
+    case 0: // 群众需求分析
+      actScore.score = Math.min(90, 42 + Math.floor(len / 12));
+      if (text.indexOf('走访') !== -1 || text.indexOf('入户') !== -1) actScore.score += 3;
+      if (text.indexOf('信任') !== -1 || text.indexOf('顾虑') !== -1) actScore.score += 3;
+      if (text.indexOf('需求') !== -1 || text.indexOf('诉求') !== -1 || text.indexOf('问题') !== -1) actScore.score += 3;
+      if (text.indexOf('黄文秀') !== -1 || text.indexOf('群众') !== -1) actScore.score += 3;
+      actScore.feedback = len > 100 ? '群众需求分析层次清晰，能够运用黄文秀工作方法进行入户调研设计，体现了"从群众中来"的理念。' : '建议运用黄文秀的入户走访方法，分层分析不同类型种植户的具体需求。';
+      break;
+    case 1: // 地理条件分析
+      actScore.score = Math.min(90, 42 + Math.floor(len / 12));
+      if (text.indexOf('地形') !== -1 || text.indexOf('坡度') !== -1) actScore.score += 2;
+      if (text.indexOf('气候') !== -1 || text.indexOf('降雨') !== -1 || text.indexOf('温差') !== -1) actScore.score += 2;
+      if (text.indexOf('喀斯特') !== -1 || text.indexOf('水文') !== -1 || text.indexOf('渗漏') !== -1) actScore.score += 2;
+      if (text.indexOf('机遇') !== -1 || text.indexOf('优势') !== -1 || text.indexOf('有利') !== -1) actScore.score += 3;
+      if (text.indexOf('因地制宜') !== -1 || text.indexOf('竺可桢') !== -1) actScore.score += 3;
+      actScore.feedback = len > 100 ? '能够辩证分析地理条件的约束与机遇，体现了竺可桢"因地制宜"的科学精神。' : '建议既分析自然条件的限制，也挖掘其中的发展机遇（如温差大有利糖分积累）。';
+      break;
+    case 2: // 产业发展路径
+      actScore.score = Math.min(92, 42 + Math.floor(len / 12));
+      if (text.indexOf('产业') !== -1 || text.indexOf('发展') !== -1) actScore.score += 2;
+      if (text.indexOf('品牌') !== -1 || text.indexOf('精品') !== -1 || text.indexOf('高端') !== -1) actScore.score += 3;
+      if (text.indexOf('电商') !== -1 || text.indexOf('渠道') !== -1 || text.indexOf('销售') !== -1) actScore.score += 3;
+      if (text.indexOf('风险') !== -1 || text.indexOf('预判') !== -1 || text.indexOf('应对') !== -1) actScore.score += 3;
+      if (text.indexOf('步骤') !== -1 || text.indexOf('阶段') !== -1 || text.indexOf('目标') !== -1) actScore.score += 3;
+      actScore.feedback = len > 100 ? '产业发展路径设计具体可行，包含了目标定位、实施步骤和风险预判，具有较强的可操作性。' : '建议具体化产业发展路径，包括目标定位、实施步骤、预期收益和风险应对措施。';
+      break;
+    case 3: // 群众参与方式
+      actScore.score = Math.min(92, 42 + Math.floor(len / 12));
+      if (text.indexOf('合作社') !== -1 || text.indexOf('入股') !== -1 || text.indexOf('组织') !== -1) actScore.score += 3;
+      if (text.indexOf('分红') !== -1 || text.indexOf('分配') !== -1 || text.indexOf('利益') !== -1) actScore.score += 3;
+      if (text.indexOf('投票') !== -1 || text.indexOf('决策') !== -1 || text.indexOf('社员') !== -1) actScore.score += 3;
+      if (text.indexOf('困难') !== -1 || text.indexOf('兜底') !== -1 || text.indexOf('保障') !== -1) actScore.score += 3;
+      actScore.feedback = len > 100 ? '群众参与机制设计完善，包含组织形式、利益分配和困难群众兜底保障，体现了"依靠人民"的理念。' : '建议设计具体的组织模式（如合作社）、利益分配方案和困难群众保障机制。';
+      break;
+    case 4: // 可持续发展考虑
+      actScore.score = Math.min(92, 42 + Math.floor(len / 12));
+      if (text.indexOf('生态') !== -1 || text.indexOf('环境') !== -1 || text.indexOf('水土') !== -1) actScore.score += 3;
+      if (text.indexOf('市场') !== -1 || text.indexOf('价格') !== -1 || text.indexOf('风险') !== -1) actScore.score += 3;
+      if (text.indexOf('人才') !== -1 || text.indexOf('青年') !== -1 || text.indexOf('培养') !== -1) actScore.score += 3;
+      if (text.indexOf('制度') !== -1 || text.indexOf('长期') !== -1 || text.indexOf('持续') !== -1 || text.indexOf('代际') !== -1) actScore.score += 3;
+      actScore.feedback = len > 100 ? '从生态、经济、人才、制度多维度规划了可持续发展路径，体现了长远眼光和系统思维。' : '建议从生态保护、市场风险、人才培育、制度保障等多维度规划长期可持续方案。';
+      break;
+  }
+  actScore.score = Math.min(95, Math.max(25, actScore.score));
+  return actScore;
+}
+
+function scoreLabel(s) {
+  if (s >= 80) return 'score-high';
+  if (s >= 60) return 'score-mid';
+  return 'score-low';
+}
+function scoreText(s) {
+  if (s >= 80) return '优秀';
+  if (s >= 60) return '良好';
+  return '待提升';
+}
+
+// ===== 提交任务一 =====
+function submitTask1() {
+  var gn = document.getElementById('groupName').value.trim();
+  var mb = document.getElementById('members').value.trim();
+  if (!gn) { alert('请填写小组名称'); return; }
+  if (!mb) { alert('请填写组员姓名'); return; }
+  var answers = [];
+  for (var i = 1; i <= 6; i++) {
+    var val = document.getElementById('q' + i).value.trim();
+    if (!val) { alert('请填写问题' + i); return; }
+    answers.push(val);
+  }
+  var totalScore = 0;
+  var analysisItems = [];
+  for (var j = 0; j < 6; j++) {
+    var result = analyzeTask1(j, answers[j]);
+    totalScore += result.score;
+    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
+  }
+  var avg = Math.round(totalScore / 6);
+  var subs = loadSubs();
+  subs.push({
+    id: Date.now(), groupName: gn, members: mb, answers: answers,
+    scores: analysisItems.map(function(a) { return a.score; }),
+    totalScore: avg, analysis: analysisItems, task: 'task1',
+    time: new Date().toLocaleString('zh-CN')
+  });
+  saveSubs(subs);
+
+  document.getElementById('resultGroupInfo').textContent = gn + ' | ' + mb;
+  document.getElementById('overallScoreDisplay').textContent = avg;
+  var questions = ['当前群众问题分析', '群众不信任的原因', '黄文秀做法体现群众观点', '黄文秀做法体现群众路线', '如何发动群众参与建设', '人民群众为何能推动建设'];
+  renderAnalysis('analysisContent', analysisItems, questions);
+
+  document.getElementById('groupName').value = '';
+  document.getElementById('members').value = '';
+  for (var l = 1; l <= 6; l++) document.getElementById('q' + l).value = '';
+  switchPage('result');
+}
+
+// ===== 提交任务二（地理诊断） =====
+function submitGeo() {
+  var gn = document.getElementById('geoGroupName').value.trim();
+  var mb = document.getElementById('geoMembers').value.trim();
+  if (!gn) { alert('请填写小组名称'); return; }
+  if (!mb) { alert('请填写组员姓名'); return; }
+  var answers = [];
+  for (var i = 1; i <= 4; i++) {
+    var val = document.getElementById('gq' + i).value.trim();
+    if (!val) { alert('请填写地理诊断问题' + i); return; }
+    answers.push(val);
+  }
+  var totalScore = 0;
+  var analysisItems = [];
+  for (var j = 0; j < 4; j++) {
+    var result = analyzeGeo(j, answers[j]);
+    totalScore += result.score;
+    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
+  }
+  var avg = Math.round(totalScore / 4);
+  var subs = loadGeoSubs();
+  subs.push({
+    id: Date.now(), groupName: gn, members: mb, answers: answers,
+    scores: analysisItems.map(function(a) { return a.score; }),
+    totalScore: avg, analysis: analysisItems, task: 'task2',
+    time: new Date().toLocaleString('zh-CN')
+  });
+  saveGeoSubs(subs);
+
+  document.getElementById('geoResultGroupInfo').textContent = gn + ' | ' + mb;
+  document.getElementById('geoOverallScoreDisplay').textContent = avg;
+  var geoQuestions = ['云岭村面临哪些自然条件限制', '地形如何影响交通与产业', '为什么山区乡村发展风险更高', '自然环境与乡村发展之间的关系'];
+  renderAnalysis('geoAnalysisContent', analysisItems, geoQuestions);
+
+  document.getElementById('geoGroupName').value = '';
+  document.getElementById('geoMembers').value = '';
+  for (var l = 1; l <= 4; l++) document.getElementById('gq' + l).value = '';
+  switchPage('geoResult');
+}
+
+// ===== 提交任务三（行动方案） =====
+function submitTask3() {
+  var gn = document.getElementById('actGroupName').value.trim();
+  var mb = document.getElementById('actMembers').value.trim();
+  var selfScore = parseInt(document.getElementById('actSelfScore').value) || 7;
+  if (!gn) { alert('请填写小组名称'); return; }
+  if (!mb) { alert('请填写组员姓名'); return; }
+  var answers = [];
+  var moduleNames = ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑'];
+  for (var i = 1; i <= 5; i++) {
+    var val = document.getElementById('aq' + i).value.trim();
+    if (!val) { alert('请填写模块' + i + '：' + moduleNames[i-1]); return; }
+    answers.push(val);
+  }
+  var totalScore = 0;
+  var analysisItems = [];
+  for (var j = 0; j < 5; j++) {
+    var result = analyzeTask3(j, answers[j]);
+    totalScore += result.score;
+    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
+  }
+  var avg = Math.round(totalScore / 5);
+  var subs = loadActionSubs();
+  subs.push({
+    id: Date.now(), groupName: gn, members: mb, answers: answers,
+    scores: analysisItems.map(function(a) { return a.score; }),
+    totalScore: avg, analysis: analysisItems, task: 'task3', selfScore: selfScore,
+    time: new Date().toLocaleString('zh-CN')
+  });
+  saveActionSubs(subs);
+
+  document.getElementById('actionResultGroupInfo').textContent = gn + ' | ' + mb + ' | 自评：' + selfScore + '分';
+  document.getElementById('actionOverallScoreDisplay').textContent = avg;
+  var actionQuestions = ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑'];
+  renderAnalysis('actionAnalysisContent', analysisItems, actionQuestions);
+
+  document.getElementById('actGroupName').value = '';
+  document.getElementById('actMembers').value = '';
+  for (var l = 1; l <= 5; l++) document.getElementById('aq' + l).value = '';
+  document.getElementById('actSelfScore').value = '7';
+  switchPage('actionResult');
+}
+
+function renderAnalysis(containerId, items, questions) {
+  var html = '';
+  for (var k = 0; k < items.length; k++) {
+    var item = items[k];
+    html += '<div class="analysis-item">';
+    html += '<div class="q-label">Q' + (k+1) + ': ' + questions[k];
+    html += '<span class="score-tag ' + scoreLabel(item.score) + '">' + item.score + '分 ' + scoreText(item.score) + '</span>';
+    html += '</div>';
+    html += '<div class="a-label">💬 ' + item.feedback + '</div>';
+    html += '</div>';
+  }
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// ===== 仪表盘 =====
+function refreshDashboard() {
+  var subs = loadSubs();
+  var geos = loadGeoSubs();
+
+  // 任务一
+  document.getElementById('totalCount').textContent = subs.length;
+  if (subs.length > 0) {
+    var sum = 0, high = 0;
+    for (var i = 0; i < subs.length; i++) { sum += subs[i].totalScore; if (subs[i].totalScore >= 80) high++; }
+    document.getElementById('avgScore').textContent = Math.round(sum / subs.length);
+    document.getElementById('highCount1').textContent = high;
+  } else { document.getElementById('avgScore').textContent = '--'; document.getElementById('highCount1').textContent = '0'; }
+
+  var list1 = document.getElementById('submissionList');
+  list1.innerHTML = subs.length === 0
+    ? '<div class="empty-state"><div class="icon">📭</div><div style="font-size:22px;">暂无任务一提交记录</div></div>'
+    : renderSubList(subs, 'task1');
+
+  // 任务二
+  document.getElementById('geoTotalCount').textContent = geos.length;
+  if (geos.length > 0) {
+    var gsum = 0, ghigh = 0;
+    for (var g = 0; g < geos.length; g++) { gsum += geos[g].totalScore; if (geos[g].totalScore >= 80) ghigh++; }
+    document.getElementById('geoAvgScore').textContent = Math.round(gsum / geos.length);
+    document.getElementById('geoHighCount').textContent = ghigh;
+  } else { document.getElementById('geoAvgScore').textContent = '--'; document.getElementById('geoHighCount').textContent = '0'; }
+
+  var list2 = document.getElementById('geoSubmissionList');
+  list2.innerHTML = geos.length === 0
+    ? '<div class="empty-state"><div class="icon">📭</div><div style="font-size:22px;">暂无任务二提交记录</div></div>'
+    : renderSubList(geos, 'task2');
+
+  // 任务三
+  var actions = loadActionSubs();
+  document.getElementById('actTotalCount').textContent = actions.length;
+  if (actions.length > 0) {
+    var asum = 0, ahigh = 0;
+    for (var aa = 0; aa < actions.length; aa++) { asum += actions[aa].totalScore; if (actions[aa].totalScore >= 80) ahigh++; }
+    document.getElementById('actAvgScore').textContent = Math.round(asum / actions.length);
+    document.getElementById('actHighCount').textContent = ahigh;
+  } else { document.getElementById('actAvgScore').textContent = '--'; document.getElementById('actHighCount').textContent = '0'; }
+
+  var list3 = document.getElementById('actionSubmissionList');
+  list3.innerHTML = actions.length === 0
+    ? '<div class="empty-state"><div class="icon">📭</div><div style="font-size:22px;">暂无任务三提交记录</div></div>'
+    : renderSubList(actions, 'task3');
+
+  // ===== 综合数据分析 =====
+  renderOverallRanking(subs, geos, actions);
+  renderKeywordCloud(actions);
+  renderTypeDistribution(actions);
+  renderStrategyStats(actions);
+}
+
+// ===== 综合排名 =====
+function renderOverallRanking(subs, geos, actions) {
+  var all = [];
+  for (var i = 0; i < subs.length; i++) all.push({ name: subs[i].groupName, score: subs[i].totalScore, task: 'task1', time: subs[i].time });
+  for (var j = 0; j < geos.length; j++) all.push({ name: geos[j].groupName, score: geos[j].totalScore, task: 'task2', time: geos[j].time });
+  for (var k = 0; k < actions.length; k++) all.push({ name: actions[k].groupName, score: actions[k].totalScore, task: 'task3', time: actions[k].time });
+  all.sort(function(a, b) { return b.score - a.score; });
+
+  var container = document.getElementById('overallRanking');
+  if (all.length === 0) { container.innerHTML = '<div class="empty-state"><div style="font-size:18px;color:#806040;">暂无数据</div></div>'; return; }
+
+  var taskLabels = { task1: '任务一', task2: '任务二', task3: '任务三' };
+  var taskCls = { task1: 't1', task2: 't2', task3: 't3' };
+  var html = '<table class="rank-table"><tr><th>排名</th><th>小组</th><th>任务</th><th>分数</th></tr>';
+  for (var r = 0; r < all.length; r++) {
+    var rankBadge = '';
+    if (r === 0) rankBadge = '<span class="rank-badge gold">1</span>';
+    else if (r === 1) rankBadge = '<span class="rank-badge silver">2</span>';
+    else if (r === 2) rankBadge = '<span class="rank-badge bronze">3</span>';
+    else rankBadge = '<span class="rank-badge normal">' + (r + 1) + '</span>';
+    html += '<tr><td>' + rankBadge + '</td><td>' + all[r].name + '</td><td><span class="task-tag ' + taskCls[all[r].task] + '">' + taskLabels[all[r].task] + '</span></td><td><strong>' + all[r].score + '分</strong></td></tr>';
+  }
+  html += '</table>';
+  container.innerHTML = html;
+}
+
+// ===== 关键词云 =====
+function renderKeywordCloud(actions) {
+  var container = document.getElementById('keywordCloud');
+  if (actions.length === 0) { container.innerHTML = '<div style="text-align:center;color:#806040;font-size:16px;padding:20px;">暂无方案数据</div>'; return; }
+
+  // 从所有任务三方案中提取关键词
+  var keywords = {};
+  var allText = '';
+  for (var i = 0; i < actions.length; i++) {
+    for (var j = 0; j < actions[i].answers.length; j++) { allText += actions[i].answers[j] + ' '; }
+  }
+  var kwList = ['合作社', '柑橘', '品牌', '电商', '生态', '精品', '入股', '分红', '节水', '有机',
+    '蓄水池', '滴灌', '人才', '青年', '风险基金', '兜底', '院坝会', '走访', '信任', '因地制宜',
+    '温差', '绿色', '可持续', '产业链', '物流', '数字化', '溯源', '众筹', '分红', '培训'];
+  for (var k = 0; k < kwList.length; k++) {
+    var kw = kwList[k];
+    var count = (allText.match(new RegExp(kw, 'g')) || []).length;
+    if (count > 0) keywords[kw] = count;
+  }
+
+  var entries = [];
+  for (var key in keywords) { if (keywords.hasOwnProperty(key)) entries.push({ word: key, count: keywords[key] }); }
+  entries.sort(function(a, b) { return b.count - a.count; });
+  entries = entries.slice(0, 18);
+
+  var maxCount = entries.length > 0 ? entries[0].count : 1;
+  var colors = ['c1', 'c2', 'c3', 'c4', 'c5'];
+  var html = '';
+  for (var e = 0; e < entries.length; e++) {
+    var ratio = entries[e].count / maxCount;
+    var sizeCls = ratio >= 0.8 ? 'xl' : (ratio >= 0.6 ? 'lg' : (ratio >= 0.35 ? 'md' : 'sm'));
+    var colorCls = colors[e % colors.length];
+    html += '<span class="keyword-tag ' + sizeCls + ' ' + colorCls + '">' + entries[e].word + '</span>';
+  }
+  container.innerHTML = html || '<div style="text-align:center;color:#806040;font-size:16px;">提交更多方案后将生成关键词云</div>';
+}
+
+// ===== 方案类型分布 =====
+function renderTypeDistribution(actions) {
+  var container = document.getElementById('typeDistribution');
+  if (actions.length === 0) { container.innerHTML = '<div style="text-align:center;color:#806040;font-size:16px;padding:20px;">暂无方案数据</div>'; return; }
+
+  var types = { '特色农业': 0, '农旅融合': 0, '电商驱动': 0, '综合发展': 0 };
+  for (var i = 0; i < actions.length; i++) {
+    var txt = actions[i].answers[2] || ''; // 产业发展路径
+    if (txt.indexOf('旅游') !== -1 || txt.indexOf('观光') !== -1 || txt.indexOf('民宿') !== -1) types['农旅融合']++;
+    else if (txt.indexOf('电商') !== -1 && (txt.indexOf('品牌') !== -1 || txt.indexOf('精品') !== -1)) types['电商驱动']++;
+    else if (txt.indexOf('加工') !== -1 || txt.indexOf('工厂') !== -1 || txt.indexOf('工业') !== -1) types['综合发展']++;
+    else types['特色农业']++;
+  }
+
+  var bars = [
+    { key: '特色农业', color: 'agri', icon: '🍊' },
+    { key: '农旅融合', color: 'tour', icon: '🏞️' },
+    { key: '电商驱动', color: 'industry', icon: '📦' },
+    { key: '综合发展', color: 'combo', icon: '🔗' }
+  ];
+
+  var html = '';
+  for (var b = 0; b < bars.length; b++) {
+    var pct = actions.length > 0 ? Math.round(types[bars[b].key] / actions.length * 100) : 0;
+    html += '<div class="type-bar-wrap">';
+    html += '<span class="type-bar-label">' + bars[b].icon + ' ' + bars[b].key + '</span>';
+    html += '<div class="type-bar-track"><div class="type-bar-fill ' + bars[b].color + '" style="width:' + pct + '%"></div></div>';
+    html += '<span class="type-bar-num">' + types[bars[b].key] + '组 (' + pct + '%)</span>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// ===== 高频策略统计 =====
+function renderStrategyStats(actions) {
+  var container = document.getElementById('strategyStats');
+  if (actions.length === 0) { container.innerHTML = '<div style="text-align:center;color:#806040;font-size:16px;padding:20px;">暂无方案数据</div>'; return; }
+
+  var strategies = [
+    { name: '合作社/集体经济', kw: ['合作社', '入股', '集体经济'], icon: '🤝' },
+    { name: '品牌化经营', kw: ['品牌', '精品', '高端', '地理标志'], icon: '🏷️' },
+    { name: '电商直销', kw: ['电商', '直播', '社区团购', '直销'], icon: '📱' },
+    { name: '节水灌溉', kw: ['滴灌', '蓄水池', '灌溉', '节水'], icon: '💧' },
+    { name: '生态保护', kw: ['生态', '有机', '绿色', '水土保持'], icon: '🌱' },
+    { name: '人才培养', kw: ['人才', '青年', '培训', '返乡'], icon: '🎓' },
+    { name: '风险防控', kw: ['风险', '保险', '储备金', '保底'], icon: '🛡️' },
+    { name: '群众参与', kw: ['走访', '院坝会', '议事', '入户'], icon: '👥' }
+  ];
+
+  var html = '';
+  for (var i = 0; i < strategies.length; i++) {
+    var count = 0;
+    for (var j = 0; j < actions.length; j++) {
+      var allTxt = actions[j].answers.join(' ');
+      for (var k = 0; k < strategies[i].kw.length; k++) {
+        if (allTxt.indexOf(strategies[i].kw[k]) !== -1) { count++; break; }
+      }
+    }
+    var pct = actions.length > 0 ? Math.round(count / actions.length * 100) : 0;
+    var color = pct >= 70 ? '#90E880' : (pct >= 40 ? '#F0D870' : '#E09070');
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(100,60,20,0.15);">';
+    html += '<span style="font-size:20px;">' + strategies[i].icon + '</span>';
+    html += '<span style="font-size:17px;color:#D8C0A0;flex:1;">' + strategies[i].name + '</span>';
+    html += '<span style="font-size:15px;color:#907050;">' + count + '/' + actions.length + '组</span>';
+    html += '<div style="width:120px;height:6px;background:rgba(40,20,10,0.5);border-radius:3px;overflow:hidden;">';
+    html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:3px;"></div></div>';
+    html += '<span style="font-size:16px;font-weight:bold;color:' + color + ';width:45px;">' + pct + '%</span>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// ===== 最佳方案 =====
+function renderBestPlan() {
+  var subs = loadSubs();
+  var geos = loadGeoSubs();
+  var actions = loadActionSubs();
+
+  // 收集所有方案
+  var all = [];
+  for (var i = 0; i < subs.length; i++) all.push({ data: subs[i], task: 'task1' });
+  for (var j = 0; j < geos.length; j++) all.push({ data: geos[j], task: 'task2' });
+  for (var k = 0; k < actions.length; k++) all.push({ data: actions[k], task: 'task3' });
+
+  if (all.length === 0) {
+    document.getElementById('bestPlanTitle').textContent = '暂无方案数据';
+    document.getElementById('bestPlanMeta').textContent = '请先提交方案';
+    document.getElementById('bestDimensions').innerHTML = '';
+    document.getElementById('bestTotalScore').textContent = '--';
+    document.getElementById('bestPlanAnswers').innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>尚无方案可供评选</div></div>';
+    return;
+  }
+
+  // 按总分排序选出最佳
+  all.sort(function(a, b) { return b.data.totalScore - a.data.totalScore; });
+  var best = all[0];
+  var s = best.data;
+
+  var taskLabels = { task1: '任务一 · 群众工作微方案', task2: '任务二 · 地理诊断卡', task3: '任务三 · 乡村共创行动方案' };
+  var taskQuestions = {
+    task1: ['当前群众问题分析', '群众不信任的原因', '黄文秀做法体现群众观点', '黄文秀做法体现群众路线', '如何发动群众参与建设', '人民群众为何能推动建设'],
+    task2: ['云岭村面临哪些自然条件限制', '地形如何影响交通与产业', '为什么山区乡村发展风险更高', '自然环境与乡村发展之间的关系'],
+    task3: ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑']
+  };
+  var dimNames = {
+    task1: ['问题识别', '原因分析', '理论理解', '方法应用', '方案设计', '理论深度'],
+    task2: ['综合分析', '因果推理', '风险认知', '辩证思维'],
+    task3: ['群众导向', '地理素养', '产业设计', '参与机制', '可持续性']
+  };
+
+  document.getElementById('bestPlanTitle').textContent = s.groupName;
+  document.getElementById('bestPlanMeta').textContent = taskLabels[best.task] + ' | ' + s.members + ' | ' + s.time;
+  document.getElementById('bestTotalScore').textContent = s.totalScore + '分';
+
+  // 多维度评分卡片
+  var dims = dimNames[best.task];
+  var dimHtml = '';
+  for (var d = 0; d < dims.length; d++) {
+    var dScore = s.scores[d] || 0;
+    dimHtml += '<div class="dim-card">';
+    dimHtml += '<div class="dim-name">' + dims[d] + '</div>';
+    dimHtml += '<div class="dim-score">' + dScore + '<span style="font-size:14px;">分</span></div>';
+    dimHtml += '<div class="dim-bar"><div class="dim-bar-fill" style="width:' + (dScore / 95 * 100) + '%"></div></div>';
+    dimHtml += '</div>';
+  }
+  document.getElementById('bestDimensions').innerHTML = dimHtml;
+
+  // 方案详情 + AI评价
+  var questions = taskQuestions[best.task];
+  var ansHtml = '';
+  for (var q = 0; q < s.answers.length; q++) {
+    ansHtml += '<div class="best-answer-block">';
+    ansHtml += '<h4>📌 ' + dims[q] + '：' + questions[q] + ' <span class="score-tag ' + scoreLabel(s.scores[q]) + '">' + s.scores[q] + '分 ' + scoreText(s.scores[q]) + '</span></h4>';
+    ansHtml += '<div class="answer-text">' + s.answers[q].replace(/</g, '&lt;') + '</div>';
+    ansHtml += '<div class="ai-comment">🤖 AI评价：' + (s.analysis[q] ? s.analysis[q].feedback : '方案完整，具有可操作性。') + '</div>';
+    ansHtml += '</div>';
+  }
+  document.getElementById('bestPlanAnswers').innerHTML = ansHtml;
+}
+
+function renderSubList(subs, task) {
+  var html = '';
+  for (var j = 0; j < subs.length; j++) {
+    var s = subs[j];
+    var cls = '', badge = '';
+    if (task === 'task2') { cls = ' geo'; badge = '<span class="task-badge t2">任务二</span>'; }
+    else if (task === 'task3') { cls = ' action'; badge = '<span class="task-badge t3">任务三</span>'; }
+    else { badge = '<span class="task-badge t1">任务一</span>'; }
+    html += '<div class="submission-item' + cls + '" onclick="viewDetail(\'' + task + '\',' + s.id + ')">';
+    html += '<div><div class="sub-name' + cls + '">' + badge + s.groupName + '</div><div class="sub-meta' + cls + '">' + s.members + ' · ' + s.time + '</div></div>';
+    html += '<div class="sub-score' + cls + '">' + s.totalScore + ' 分</div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+function viewDetail(task, id) {
+  var subs;
+  if (task === 'task2') subs = loadGeoSubs();
+  else if (task === 'task3') subs = loadActionSubs();
+  else subs = loadSubs();
+  var s = null;
+  for (var i = 0; i < subs.length; i++) { if (subs[i].id === id) { s = subs[i]; break; } }
+  if (!s) return;
+
+  var questions;
+  if (task === 'task2') questions = ['云岭村面临哪些自然条件限制', '地形如何影响交通与产业', '为什么山区乡村发展风险更高', '自然环境与乡村发展之间的关系'];
+  else if (task === 'task3') questions = ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑'];
+  else questions = ['当前群众问题分析', '群众不信任的原因', '黄文秀做法体现群众观点', '黄文秀做法体现群众路线', '如何发动群众参与建设', '人民群众为何能推动建设'];
+
+  var taskLabel = task === 'task2' ? '任务二 · 地理诊断卡' : (task === 'task3' ? '任务三 · 乡村共创行动方案' : '任务一 · 群众工作微方案');
+  var html = '<button class="close-btn" onclick="closeModalDirect()">✕</button>';
+  html += '<h3>' + s.groupName + ' · ' + taskLabel + '</h3>';
+  html += '<div style="font-size:18px;color:#A08060;margin-bottom:16px;">' + s.members + ' · ' + s.time + ' · 综合评分：<strong style="color:#E8C870;font-size:24px;">' + s.totalScore + '分</strong></div>';
+
+  for (var j = 0; j < s.answers.length; j++) {
+    html += '<div class="analysis-item">';
+    html += '<div class="q-label" style="font-size:20px;">Q' + (j+1) + ': ' + questions[j];
+    html += '<span class="score-tag ' + scoreLabel(s.scores[j]) + '">' + s.scores[j] + '分</span>';
+    html += '</div>';
+    html += '<div style="font-size:18px;color:#D8C0A0;margin:7px 0;line-height:1.6;">' + s.answers[j].replace(/</g,'&lt;') + '</div>';
+    html += '<div class="a-label" style="font-size:17px;">💬 ' + (s.analysis[j] ? s.analysis[j].feedback : '') + '</div>';
+    html += '</div>';
+  }
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('show'); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ===== 导出全部数据 =====
+function exportAllData() {
+  var subs = loadSubs();
+  var geos = loadGeoSubs();
+  var actions = loadActionSubs();
+  if (subs.length === 0 && geos.length === 0 && actions.length === 0) { alert('暂无数据可导出'); return; }
+  var text = '══════════ 云岭村乡村共创任务平台 · 数据汇总 ══════════\n\n';
+  if (subs.length > 0) {
+    text += '====== 任务一 · 群众工作微方案 ======\n\n';
+    for (var i = 0; i < subs.length; i++) {
+      var s = subs[i];
+      text += '=== ' + s.groupName + ' ===\n组员: ' + s.members + '\n时间: ' + s.time + '\n评分: ' + s.totalScore + '\n\n';
+      for (var j = 0; j < s.answers.length; j++) text += 'Q' + (j+1) + ': ' + s.answers[j] + '\nAI: ' + (s.analysis[j] ? s.analysis[j].feedback : '') + '\n\n';
+    }
+  }
+  if (geos.length > 0) {
+    text += '\n====== 任务二 · 地理诊断卡 ======\n\n';
+    for (var g = 0; g < geos.length; g++) {
+      var gs = geos[g];
+      text += '=== ' + gs.groupName + ' ===\n组员: ' + gs.members + '\n时间: ' + gs.time + '\n评分: ' + gs.totalScore + '\n\n';
+      for (var k = 0; k < gs.answers.length; k++) text += 'Q' + (k+1) + ': ' + gs.answers[k] + '\nAI: ' + (gs.analysis[k] ? gs.analysis[k].feedback : '') + '\n\n';
+    }
+  }
+  if (actions.length > 0) {
+    text += '\n====== 任务三 · 乡村共创行动方案 ======\n\n';
+    var modNames = ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑'];
+    for (var h = 0; h < actions.length; h++) {
+      var act = actions[h];
+      text += '=== ' + act.groupName + ' ===\n组员: ' + act.members + '\n时间: ' + act.time + '\n自评: ' + (act.selfScore || 'N/A') + '分\nAI评分: ' + act.totalScore + '\n\n';
+      for (var m = 0; m < act.answers.length; m++) text += '模块' + (m+1) + '(' + modNames[m] + '): ' + act.answers[m] + '\nAI: ' + (act.analysis[m] ? act.analysis[m].feedback : '') + '\n\n';
+    }
+  }
+  var blob = new Blob(['﻿' + text], {type:'text/plain;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '云岭村任务汇总_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+}
+
+function clearAllData() {
+  if (confirm('确定清空全部提交记录（任务一+任务二+任务三）？此操作不可撤销。')) {
+    localStorage.removeItem('villager_task_subs');
+    localStorage.removeItem('villager_geo_subs');
+    localStorage.removeItem('villager_action_subs');
+    refreshDashboard();
+  }
+}
+
+// ===== 初始化 =====
+window.addEventListener('load', function() {
+  var existing = loadSubs();
+  if (existing.length === 0) saveSubs(SAMPLE_SUBS);
+  // 任务二格式已更新为4题，旧数据不兼容，直接替换为示例数据
+  saveGeoSubs(SAMPLE_GEO_SUBS);
+  // 任务三：加载示例数据
+  var existingActions = loadActionSubs();
+  if (existingActions.length === 0) saveActionSubs(SAMPLE_ACTION_SUBS);
+});
+</script>
+</body>
+</html>

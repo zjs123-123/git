@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI总管机器人 · 演示预览</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:"Microsoft YaHei",sans-serif;
+  background:#0D0B08; color:#D8D0C8;
+  display:flex; height:100vh; overflow:hidden;
+}
+/* 左侧页面选择器 */
+.sidebar {
+  width:240px; background:#120F0C; padding:16px;
+  border-right:1px solid #2A1A10; overflow-y:auto;
+  flex-shrink:0;
+}
+.sidebar h2 {
+  font-size:16px; color:#C8965A; margin-bottom:4px;
+}
+.sidebar .subtitle { font-size:10px; color:#706050; margin-bottom:16px; }
+.page-btn {
+  display:block; width:100%; padding:8px 12px; margin-bottom:4px;
+  background:#1A1210; border:1px solid #2A1A10; color:#A09080;
+  text-align:left; font-size:11px; cursor:pointer; border-radius:6px;
+  font-family:inherit; transition:all .2s;
+}
+.page-btn:hover { background:#2A1A10; border-color:#5A3A20; color:#D8C8B0; }
+.page-btn.active { background:#3A1A0A; border-color:#C8965A; color:#F0D8A0; font-weight:bold; }
+.page-btn .pid { font-size:9px; color:#706050; float:right; }
+
+/* 右侧预览区 */
+.preview {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; position:relative;
+}
+.preview-bg {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at center, #1A1410 0%, #0A0805 100%);
+}
+.preview-label {
+  position:absolute; top:16px; left:50%; transform:translateX(-50%);
+  font-size:11px; color:#504030; z-index:1;
+}
+/* 嵌入的机器人iframe */
+.robot-frame {
+  width:280px; height:520px; border:none; z-index:2;
+  border-radius:16px; overflow:hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.page-info {
+  margin-top:16px; z-index:1; text-align:center;
+}
+.page-info .title { font-size:14px; color:#C8965A; }
+.page-info .desc { font-size:11px; color:#706050; margin-top:4px; }
+
+/* 底部提示 */
+.bottom-hint {
+  position:absolute; bottom:12px; font-size:10px; color:#403020; z-index:1;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>🤖 AI系统总管</h2>
+  <div class="subtitle">选择页面预览机器人播报内容</div>
+  <div id="pageList"></div>
+  <div style="margin-top:20px;padding-top:12px;border-top:1px solid #2A1A10">
+    <div class="subtitle" style="margin-bottom:8px">其他智能体</div>
+    <button class="page-btn" onclick="location.href='/agent-huangwenxiu.html'">👩‍💼 黄文秀AI助手 →</button>
+    <button class="page-btn" onclick="location.href='/agent-zhukezhen.html'">🌍 竺可桢地理智库 →</button>
+  </div>
+</div>
+
+<div class="preview">
+  <div class="preview-bg"></div>
+  <div class="preview-label">PPT 页面预览区</div>
+  <iframe class="robot-frame" id="robotFrame" src="/ai-master-robot.html?page=P2"></iframe>
+  <div class="bottom-hint">💡 点击小机器人即可听到播报 | 点击气泡可停止</div>
+</div>
+
+<script>
+const pages = [
+  "P1","P2","P3","P4","P5","P6","P7","P8","P9","P10",
+  "P11","P12","P13","P14","P15","P16","P17","P18",
+  "P19","P20","P21","P23","P25","P26","P27","P28","P29","P30"
+];
+const pageNames = {
+  "P1":"封面","P2":"课堂启动","P3":"视频导入","P4":"数据面板",
+  "P5":"任务受阻","P6":"档案解锁","P7":"沉浸场景","P8":"第一次入户",
+  "P9":"黄文秀选择","P10":"教师三连问","P11":"AI人机互动","P12":"产业受阻",
+  "P13":"走向知识","P14":"群众观点","P15":"群众路线","P16":"课后任务",
+  "P17":"课时一总结","P18":"课时二过渡","P19":"问题可视化","P20":"地理智库",
+  "P21":"地形分析","P23":"双智囊AI","P25":"任务三启动","P26":"方案对比",
+  "P27":"双智囊提示","P28":"方案提交","P29":"身份确认","P30":"课堂结束"
+};
+
+const list = document.getElementById("pageList");
+pages.forEach(p => {
+  const btn = document.createElement("button");
+  btn.className = "page-btn" + (p === "P2" ? " active" : "");
+  btn.innerHTML = `${pageNames[p] || p} <span class="pid">${p}</span>`;
+  btn.onclick = () => {
+    document.querySelectorAll(".page-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("robotFrame").src = `/ai-master-robot.html?page=${p}`;
+  };
+  list.appendChild(btn);
+});
+</script>
+</body>
+</html>
