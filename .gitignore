@@ -3,3 +3,6 @@ desktop.ini
 .env
 .DS_Store
 *.log
+启动服务器.bat
+server.js
+.git/

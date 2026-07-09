@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI乡村共创系统 · 智能总管</title>
+<style>
+:root {
+  --body: #3A2A1A; --bodyLight: #4A3A2A; --screen: #1A1008;
+  --screenText: #F5A623; --accent: #C8965A; --accent2: #8B6914;
+  --techBlue: #3A7BD5; --techCyan: #4ECDC4; --alertRed: #D94A4A;
+  --panelBg: #151012; --bubbleBg: #1E1814; --text: #D8D0C8;
+  --textLight: #F0E8E0; --muted: #908070;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Microsoft YaHei", sans-serif;
+  background: transparent;
+  width: 100%; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none;
+}
+/* 主容器 —— 适配PPT Web Viewer侧窗 */
+.container {
+  width: 260px; padding: 16px 12px 12px;
+  background: linear-gradient(180deg, #1A1210 0%, #0F0B08 100%);
+  border-radius: 16px;
+  border: 1px solid #3A2820;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* ===== 机器人形象 ===== */
+.robot-wrap {
+  position: relative; cursor: pointer;
+  transition: transform 0.2s;
+}
+.robot-wrap:hover { transform: scale(1.04); }
+.robot-wrap:active { transform: scale(0.96); }
+
+/* 天线 */
+.antenna {
+  width: 2px; height: 18px; background: #5A4A3A;
+  margin: 0 auto 2px; position: relative;
+}
+.antenna::after {
+  content: ""; position: absolute; top: -4px; left: -3px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--techBlue);
+  box-shadow: 0 0 8px var(--techBlue), 0 0 16px var(--techBlue);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100% { opacity: 0.6; box-shadow: 0 0 6px var(--techBlue); }
+  50% { opacity: 1; box-shadow: 0 0 14px var(--techBlue), 0 0 24px var(--techCyan); }
+}
+
+/* 头部 */
+.head {
+  width: 64px; height: 56px; background: linear-gradient(180deg, var(--bodyLight) 0%, var(--body) 100%);
+  border-radius: 16px 16px 10px 10px; position: relative;
+  border: 2px solid #5A4A3A;
+}
+/* 屏幕脸 */
+.face-screen {
+  position: absolute; top: 10px; left: 10px; right: 10px; bottom: 16px;
+  background: var(--screen); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #2A1A08; overflow: hidden;
+}
+/* 眼睛 */
+.eyes {
+  display: flex; gap: 10px;
+}
+.eye {
+  width: 8px; height: 10px; background: var(--screenText);
+  border-radius: 3px;
+  animation: blink 4s ease-in-out infinite;
+}
+.eye:nth-child(2) { animation-delay: 0.1s; }
+@keyframes blink {
+  0%,95%,100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}
+/* 嘴巴 —— 说话时亮起 */
+.mouth {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  width: 16px; height: 3px; background: #3A2A1A; border-radius: 2px;
+  transition: all 0.3s;
+}
+.mouth.speaking {
+  background: var(--techCyan); width: 20px; height: 4px;
+  box-shadow: 0 0 6px var(--techCyan);
+}
+
+/* 身体 */
+.body {
+  width: 50px; height: 36px; background: linear-gradient(180deg, var(--body) 0%, #2A1A10 100%);
+  border-radius: 6px 6px 14px 14px; margin-top: -2px;
+  border: 2px solid #5A4A3A; border-top: none;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+/* 核心灯 */
+.core-light {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--techBlue);
+  box-shadow: 0 0 6px var(--techBlue);
+  animation: coreBeat 1.5s ease-in-out infinite;
+}
+@keyframes coreBeat {
+  0%,100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* ===== 点击提示 ===== */
+.click-hint {
+  font-size: 9px; color: var(--muted); text-align: center;
+  animation: hintPulse 3s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%,100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ===== 对话气泡 ===== */
+.speech-bubble {
+  width: 100%; background: var(--bubbleBg); border-radius: 12px;
+  padding: 10px 12px; position: relative; display: none;
+  border: 1px solid #3A2820;
+}
+.speech-bubble::before {
+  content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent;
+  border-bottom: 8px solid #3A2820;
+}
+.speech-bubble::after {
+  content: ""; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-bottom: 7px solid var(--bubbleBg);
+}
+.speech-bubble.show { display: block; animation: bubbleIn 0.3s ease; }
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bubble-text {
+  font-size: 12px; color: var(--text); line-height: 1.6;
+}
+.bubble-label {
+  font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: bold;
+}
+
+/* ===== 页面标签 ===== */
+.page-tag {
+  font-size: 9px; color: var(--muted); text-align: center;
+  padding: 3px 10px; background: #0D0A06; border-radius: 10px;
+  border: 1px solid #2A1A10;
+}
+
+/* ===== 状态指示灯 ===== */
+.status-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 0 4px;
+}
+.status-indicator {
+  display: flex; align-items: center; gap: 4px; font-size: 8px; color: var(--muted);
+}
+.status-indicator .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+}
+.dot.green { background: #4CAF50; box-shadow: 0 0 4px #4CAF50; }
+.dot.blue { background: var(--techBlue); box-shadow: 0 0 4px var(--techBlue); }
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3A2820; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 状态行 -->
+  <div class="status-row">
+    <div class="status-indicator"><span class="dot green"></span>系统在线</div>
+    <div class="status-indicator"><span class="dot blue"></span>AI总管 v2.4</div>
+    <div class="status-indicator" id="pageLabel" style="margin-left:auto">P2</div>
+  </div>
+
+  <!-- 机器人 -->
+  <div class="robot-wrap" id="robot" onclick="speak()" title="点击播报本页重点">
+    <div class="antenna"></div>
+    <div class="head">
+      <div class="face-screen">
+        <div class="eyes"><span class="eye"></span><span class="eye"></span></div>
+        <div class="mouth" id="mouth"></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="core-light"></div>
+    </div>
+  </div>
+
+  <!-- 点击提示 -->
+  <div class="click-hint" id="clickHint">👆 点击机器人播报重点</div>
+
+  <!-- 对话气泡 -->
+  <div class="speech-bubble" id="bubble">
+    <div class="bubble-label" id="bubbleLabel">📢 系统播报</div>
+    <div class="bubble-text" id="bubbleText"></div>
+  </div>
+
+  <!-- 当前页面标识 -->
+  <div class="page-tag" id="pageTag">📍 加载中...</div>
+
+</div>
+
+<script>
+// ===== 全课页面播报内容库 =====
+const PAGE_SCRIPTS = {
+  "P1": {
+    label: "📢 封面",
+    text: "《如果她（他）活到今天》—— AI驱动下新时代乡村共创课堂。文化素养+AI，思政×地理，高中段。",
+    tag: "📍 P1 · 封面"
+  },
+  "P2": {
+    label: "📢 系统启动",
+    text: "欢迎进入「新时代乡村共创行动」！你们将作为青年乡村共创实践团成员，完成三项任务：群众调研与沟通、村庄问题诊断分析、乡村共创方案设计。",
+    tag: "📍 P2 · 课堂启动"
+  },
+  "P3": {
+    label: "📢 云岭村初印象",
+    text: "云岭村，位于中国西南喀斯特山区。航拍视角带你走进这座村庄——云雾缭绕、盘山公路、村民日常劳作。这是你们即将接手建设的地方。",
+    tag: "📍 P3 · 视频导入"
+  },
+  "P4": {
+    label: "📢 基础资料",
+    text: "云岭村基础资料加载完成。全村286户，分散于6个山坡片区。主要作物柑橘，种植面积约800亩。距县城47公里，仅一条盘山公路。雨季5到8月，年均塌方阻断3到5次。青壮年外流约62%。请注意：为什么有资源有产业的村庄，发展仍然困难重重？",
+    tag: "📍 P4 · 数据面板"
+  },
+  "P5": {
+    label: "⚠ 任务警报",
+    text: "警告！乡村共创行动推进失败。三大原因：群众不愿配合调研、村民对实践团缺乏信任、产业方案推进停滞。听听村民怎么说——'以前也有人来调研，最后没下文。''你们年轻人懂农村吗？'",
+    tag: "📍 P5 · 任务受阻"
+  },
+  "P6": {
+    label: "📢 系统检测",
+    text: "系统检测到群众工作推进受阻。可解锁资源：基层工作档案。是否解锁？——建议立即解锁，了解黄文秀同志在百坭村的真实工作方法。",
+    tag: "📍 P6 · 档案解锁"
+  },
+  "P7": {
+    label: "📢 场景进入",
+    text: "2018年，驻村第67天，第一次大规模入户调研。你将作为实践团成员，跟随黄文秀开展第一次入户工作。注意：她正从沾满泥浆的车上下来，准备走进村民的家。",
+    tag: "📍 P7 · 沉浸场景"
+  },
+  "P8": {
+    label: "📢 情境互动",
+    text: "村民拒绝开门！'不用调研了，以前也有人来，最后什么都没解决。'——请选择你的行动。A：强调政策要求。B：留下调查表改天再来。C：主动帮村民做事再找机会交流。",
+    tag: "📍 P8 · 第一次入户"
+  },
+  "P9": {
+    label: "📢 黄文秀的选择",
+    text: "黄文秀选择：先帮村民干活，再慢慢聊天。帮村民扫院子、收玉米、坐在小板凳上聊家常。这不是'管理群众'，而是'走进群众'。这源于她在百坭村的真实工作记录。",
+    tag: "📍 P9 · 工作方式"
+  },
+  "P10": {
+    label: "📢 教师追问",
+    text: "请思考：黄文秀明明是来推进工作的，为什么却先去帮村民干活？如果连群众真实想法都不了解，工作还能推进吗？她是在'管理群众'，还是在'走进群众'？",
+    tag: "📍 P10 · 三连问"
+  },
+  "P11": {
+    label: "📢 AI智能体",
+    text: "黄文秀基层工作档案AI对话系统已接入。你可以直接向'黄文秀AI智能体'提问——为什么群众不愿意相信干部？为什么总要反复入户？为什么不直接宣布政策？",
+    tag: "📍 P11 · 人机互动"
+  },
+  "P12": {
+    label: "⚠ 产业警报",
+    text: "产业推进警报！大量村民反对新方案。往年的贡柑滞销事件让村民心有余悸——果子烂在地里、被收购商压价、农户血本无归。'你们说发展产业，万一又赔了怎么办？'",
+    tag: "📍 P12 · 产业受阻"
+  },
+  "P13": {
+    label: "📢 教师追问",
+    text: "请思考：为什么黄文秀总是强调先听群众怎么想？她为什么没有替群众直接做决定？她的这些做法，体现了一种怎样的工作思想？关键词：相信人民群众、一切为了群众、从群众中来、到群众中去。",
+    tag: "📍 P13 · 走向知识"
+  },
+  "P14": {
+    label: "📢 知识生成",
+    text: "群众观点的四个核心：相信人民群众自己解放自己、全心全意为人民服务、一切向人民群众负责、虚心向人民群众学习。每一项，黄文秀都用实际行动给出了答案。",
+    tag: "📍 P14 · 群众观点"
+  },
+  "P15": {
+    label: "📢 知识生成",
+    text: "群众路线的四个核心：一切为了群众、一切依靠群众、从群众中来、到群众中去。黄文秀没有坐在办公室制定方案，而是反复入户、了解群众真实需求、发动群众共同参与建设。",
+    tag: "📍 P15 · 群众路线"
+  },
+  "P16": {
+    label: "📋 任务发布",
+    text: "课后任务发布！请完成《云岭村群众工作微方案》，包含六项内容：群众问题分析、不信任原因、黄文秀做法与群众观点的对应、与群众路线的对应、如何发动群众参与、人民群众为什么能推动乡村建设。扫码进入'乡村共创任务平台'在线提交。",
+    tag: "📍 P16 · 课后任务"
+  },
+  "P17": {
+    label: "📢 课时一总结",
+    text: "课时一结束。请记住这句话：只有扎根泥土，才能懂得人民。黄文秀用她的生命诠释了什么是真正的群众路线。",
+    tag: "📍 P17 · 总结升华"
+  },
+  "P18": {
+    label: "⚠ 新任务",
+    text: "任务一已完成！但新问题出现——即使群众愿意参与，云岭村的发展仍然推进缓慢。任务二：为什么云岭村的发展总是'卡住'？从地理视角重新认识乡村问题。",
+    tag: "📍 P18 · 课时二过渡"
+  },
+  "P19": {
+    label: "📢 数据面板",
+    text: "云岭村发展面临五大问题：雨季道路频繁中断、农产品运输成本高、青壮年持续外流、山地耕地破碎、产业收益不稳定。这些问题，不能只靠'努力'来解决。",
+    tag: "📍 P19 · 问题可视化"
+  },
+  "P20": {
+    label: "📢 智库接入",
+    text: "当前问题涉及自然环境与乡村发展的关系。地理智库系统已接入——竺可桢地理研究档案加载中。地理环境不会直接决定发展，但会影响发展的方式与难度。",
+    tag: "📍 P20 · 地理智库"
+  },
+  "P21": {
+    label: "📢 地形分析",
+    text: "云岭村地形诊断：为什么路总修不好？喀斯特山区施工难度是平原的3到5倍，雨季塌方频繁，聚落分散导致基础设施人均成本极高。自然地理环境，会深刻影响乡村发展方式。",
+    tag: "📍 P21 · 地形分析"
+  },
+  "P23": {
+    label: "📢 地理智库AI",
+    text: "竺可桢地理智库AI对话系统已接入。你可以向'地理智库'提问：为什么自然环境会影响经济发展？为什么山区农业风险更高？喀斯特山区为什么不适合大规模开发？",
+    tag: "📍 P23 · 双智囊"
+  },
+  "P25": {
+    label: "📢 任务三启动",
+    text: "任务三：什么才是真正适合云岭村的发展道路？系统已汇总三栏信息——群众问题、地理条件、已有资源。请结合前两次任务成果，完成云岭村乡村共创行动方案设计。",
+    tag: "📍 P25 · 最终任务"
+  },
+  "P26": {
+    label: "📢 方案对比",
+    text: "三种方案对比：A大规模工业开发——生态风险大，不适合山区。B网红旅游村——交通条件不足，同质化风险。C山地特色农业加合作共创——依托现有产业，群众参与度高，更符合当地条件。",
+    tag: "📍 P26 · 方案对比"
+  },
+  "P27": {
+    label: "📢 双智囊提示",
+    text: "黄文秀说：真正能留下来的产业，一定是群众愿意参与、能够参与的产业。竺可桢说：适合土地的发展，才能真正持续下去。两个视角，指向同一个答案。",
+    tag: "📍 P27 · 双智囊"
+  },
+  "P28": {
+    label: "📋 方案提交",
+    text: "最终任务：《云岭村乡村共创行动方案》。五个模块：群众需求分析、地理条件分析、产业发展路径、群众参与方式、可持续发展考虑。扫码在线提交，系统将自动汇总分析，下一课时展示成果。",
+    tag: "📍 P28 · 方案提交"
+  },
+  "P29": {
+    label: "📢 最终问题",
+    text: "新时代身份确认。乡村振兴不是历史中的任务，而是属于这一代青年的新时代长征。最终问题：如果未来有一天，你的家乡也需要建设，你愿意回来吗？——请认真思考这个问题。",
+    tag: "📍 P29 · 身份确认"
+  },
+  "P30": {
+    label: "📢 最终升华",
+    text: "《如果她（他）活到今天》。我们无法替他们重写历史，但我们可以接过他们未走完的长征。感谢你参与这堂AI驱动的乡村共创课堂。",
+    tag: "📍 P30 · 课堂结束"
+  }
+};
+
+// ===== 获取当前页面参数 =====
+const params = new URLSearchParams(window.location.search);
+const pageId = params.get("page") || "P2";
+const pageData = PAGE_SCRIPTS[pageId] || PAGE_SCRIPTS["P2"];
+
+// ===== 初始化页面 =====
+document.getElementById("pageTag").textContent = pageData.tag;
+document.getElementById("pageLabel").textContent = pageId;
+document.getElementById("bubbleLabel").textContent = pageData.label;
+document.getElementById("bubbleText").textContent = pageData.text;
+
+// ===== 说话功能 =====
+let isSpeaking = false;
+
+function speak() {
+  const robot = document.getElementById("robot");
+  const bubble = document.getElementById("bubble");
+  const mouth = document.getElementById("mouth");
+  const hint = document.getElementById("clickHint");
+  const text = pageData.text;
+
+  // 如果正在说话，停止
+  if (isSpeaking) {
+    speechSynthesis.cancel();
+    isSpeaking = false;
+    mouth.classList.remove("speaking");
+    bubble.classList.remove("show");
+    hint.textContent = "👆 点击机器人播报重点";
+    robot.style.transform = "";
+    return;
+  }
+
+  // 显示气泡
+  bubble.classList.add("show");
+  hint.textContent = "🔊 正在播报... (点击停止)";
+
+  // 嘴巴动画
+  mouth.classList.add("speaking");
+
+  // TTS 语音播报
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "zh-CN";
+  utterance.rate = 0.95;
+  utterance.pitch = 1.05;
+  utterance.volume = 0.9;
+
+  // 尝试选择中文语音
+  const voices = speechSynthesis.getVoices();
+  const zhVoice = voices.find(v => v.lang.startsWith("zh-CN") || v.lang.startsWith("zh-TW"));
+  if (zhVoice) utterance.voice = zhVoice;
+
+  isSpeaking = true;
+
+  utterance.onend = () => {
+    isSpeaking = false;
+    mouth.classList.remove("speaking");
+    hint.textContent = "👆 点击机器人播报重点";
+  };
+
+  utterance.onerror = () => {
+    isSpeaking = false;
+    mouth.classList.remove("speaking");
+    hint.textContent = "👆 点击机器人播报重点";
+    // 有些浏览器需要用户交互后才允许TTS，静默失败
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+// 预加载语音列表
+speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+speechSynthesis.getVoices();
+
+// ===== 也允许点击气泡关闭 =====
+document.getElementById("bubble").addEventListener("click", function(e) {
+  if (isSpeaking) speak(); // 停止说话
+});
+</script>
+</body>
+</html>

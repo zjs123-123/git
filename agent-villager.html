@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>村民反馈 · 云岭村</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Microsoft YaHei", sans-serif;
+  background: #000;
+  width: 100vw; height: 100vh;
+  margin:0; padding:0;
+  user-select: none;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== 村庄俯视图 — 铺满上半大部分区域 ===== */
+.village-cover {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 75%;
+  background: url('village-bg.png') center/cover no-repeat;
+}
+.village-cover::after {
+  content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, #000 100%);
+}
+.village-label {
+  position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+  font-size: 26px; color: #FFE8C8; font-weight: bold;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.95);
+  letter-spacing: 4px;
+  white-space: nowrap;
+}
+
+/* ===== 人物卡片区 — 悬浮在村庄图上方 ===== */
+.characters-row {
+  position: absolute; top: 38%; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 32px; justify-content: center;
+  z-index: 3;
+}
+
+.char-card {
+  width: 340px; height: 410px;
+  border-radius: 16px; overflow: hidden;
+  cursor: pointer;
+  border: 3px solid rgba(200,160,120,0.3);
+  transition: all 0.4s ease;
+  position: relative;
+  background: #0A0806;
+  flex-shrink: 0;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+.char-card img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: all 0.4s ease;
+}
+.char-card:hover {
+  border-color: #5A3020;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+}
+.char-card.active {
+  border-color: #E08050;
+  box-shadow: 0 0 30px rgba(200,100,50,0.5), 0 8px 24px rgba(0,0,0,0.5);
+  transform: scale(1.05);
+}
+.char-card.active img {
+  filter: brightness(1.15);
+}
+.char-card.inactive {
+  opacity: 0.45;
+  filter: grayscale(0.3);
+}
+.char-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 8px; text-align: center;
+  font-size: 14px; color: #E0C898;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+  font-weight: bold;
+}
+
+/* ===== 说话提示标签 ===== */
+.speaking-tag {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  background: #E08050; color: #FFF;
+  font-size: 14px; padding: 5px 16px; border-radius: 12px;
+  font-weight: bold; white-space: nowrap;
+  display: none; z-index: 3;
+  animation: tagPulse 0.6s ease-in-out infinite;
+}
+.char-card.active .speaking-tag { display: block; }
+@keyframes tagPulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===== 固定语音气泡 — 悬浮在底部 ===== */
+.bubble-area {
+  position: absolute; bottom: 72px; left: 50%; transform: translateX(-50%);
+  width: 620px; max-width: 88vw;
+  display: flex; align-items: flex-start; gap: 10px;
+  z-index: 3;
+}
+
+.bubble-fixed {
+  flex: 1; background: #1A0E08;
+  border: 1px solid #3A2010;
+  border-radius: 8px 20px 20px 20px;
+  padding: 16px 22px; position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.bubble-text {
+  font-size: 18px; color: #E0D0C0; line-height: 1.5;
+  transition: all 0.3s ease;
+}
+.bubble-speaker {
+  font-size: 13px; color: #906040; margin-top: 4px;
+  text-align: right; transition: all 0.3s ease;
+}
+.bubble-text.switching { opacity: 0; transform: translateY(-8px); }
+.bubble-speaker.switching { opacity: 0; }
+
+.placeholder-text {
+  font-size: 14px; color: #403020; font-style: italic;
+}
+
+/* ===== 底部控制 ===== */
+.bottom-bar {
+  position: absolute; bottom: 10px; left: 24px; right: 24px;
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  z-index: 3;
+}
+
+.progress {
+  display: flex; gap: 8px; align-items: center;
+}
+.progress-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #1A1008;
+  transition: all 0.3s;
+}
+.progress-dot.done { background: #C07050; box-shadow: 0 0 6px #C07050; }
+.progress-dot.current { background: #E08060; box-shadow: 0 0 8px #E08060; animation: dotPulse 0.5s ease-in-out infinite; }
+@keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
+
+.hint-text {
+  font-size: 13px; color: #604030; text-align: center;
+  animation: hintFade 2.5s ease-in-out infinite;
+}
+@keyframes hintFade { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+.reset-btn {
+  background: transparent; border: 1px solid #2A1510; color: #705040;
+  padding: 6px 20px; border-radius: 14px; font-size: 13px;
+  cursor: pointer; font-family: inherit;
+}
+.reset-btn:hover { background: #0F0805; border-color: #6A3020; color: #B08060; }
+
+/* 说话指示器 */
+.speaking-indicator {
+  display: none; align-items: center; gap: 5px; font-size: 12px; color: #C07050;
+}
+.speaking-indicator.show { display: flex; }
+.speaking-d { width: 5px; height: 5px; border-radius: 50%; background: #C07050; }
+.speaking-d:nth-child(1) { animation: sd 0.8s infinite 0s; }
+.speaking-d:nth-child(2) { animation: sd 0.8s infinite 0.2s; }
+.speaking-d:nth-child(3) { animation: sd 0.8s infinite 0.4s; }
+@keyframes sd { 0%,100%{opacity:0.3} 50%{opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- 村庄俯视图封面 — 铺满全屏上半部 -->
+<div class="village-cover">
+  <div class="village-label">云岭村 · 村民真实声音</div>
+</div>
+
+<!-- 两个豆包生成的村民形象 — 悬浮在村庄图上 -->
+<div class="characters-row">
+  <div class="char-card" id="charCard1" onclick="nextMessage()">
+    <img src="villager-1.png" alt="村民形象1">
+    <div class="speaking-tag" id="speakingTag1">正在说话...</div>
+  </div>
+  <div class="char-card" id="charCard2" onclick="nextMessage()">
+    <img src="villager-2.png" alt="村民形象2">
+    <div class="speaking-tag" id="speakingTag2">正在说话...</div>
+  </div>
+</div>
+
+<!-- 固定语音气泡 -->
+<div class="bubble-area">
+  <div class="bubble-fixed">
+    <div class="bubble-text" id="bubbleText">
+      <span class="placeholder-text">等待村民发言...</span>
+    </div>
+    <div class="bubble-speaker" id="bubbleSpeaker"></div>
+  </div>
+</div>
+
+<!-- 说话指示器 -->
+<div class="speaking-indicator" id="speakingInd" style="position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:3;">
+  <span class="speaking-d"></span><span class="speaking-d"></span><span class="speaking-d"></span>
+  正在说话...
+</div>
+
+<!-- 底部 -->
+<div class="bottom-bar">
+  <span class="hint-text" id="hint">👆 点击村民形象听取反馈</span>
+  <div class="progress" id="progress">
+    <span class="progress-dot" id="dot0"></span>
+    <span class="progress-dot" id="dot1"></span>
+    <span class="progress-dot" id="dot2"></span>
+    <span class="progress-dot" id="dot3"></span>
+  </div>
+  <button class="reset-btn" id="resetBtn" onclick="resetAll()" style="display:none">↻ 重新播放</button>
+</div>
+
+<script>
+// ===== 四个村民配置 =====
+const VILLAGERS = [
+  {
+    name: "张大爷",
+    text: "以前也有人来调研，最后没结果。",
+    charIndex: 1,  // 对应 charCard1
+    pitch: 0.68,
+    rate: 0.78,
+    volume: 0.9,
+    voiceGender: "male",
+    voiceAge: "old",
+  },
+  {
+    name: "李婶",
+    text: "你们年轻人懂农村吗？",
+    charIndex: 2,  // 对应 charCard2
+    pitch: 1.35,
+    rate: 0.92,
+    volume: 0.85,
+    voiceGender: "female",
+    voiceAge: "mid",
+  },
+  {
+    name: "王叔",
+    text: "产业项目以前赔过，干部说得好听。",
+    charIndex: 1,  // 对应 charCard1
+    pitch: 0.85,
+    rate: 0.88,
+    volume: 0.9,
+    voiceGender: "male",
+    voiceAge: "mid",
+  },
+  {
+    name: "陈伯",
+    text: "最后还不是我们自己承担风险？",
+    charIndex: 2,  // 对应 charCard2
+    pitch: 0.62,
+    rate: 0.75,
+    volume: 0.9,
+    voiceGender: "male",
+    voiceAge: "old",
+  },
+];
+
+let msgIndex = 0;
+let isAnimating = false;
+let availableVoices = [];
+
+function initVoices() {
+  availableVoices = speechSynthesis.getVoices();
+  VILLAGERS.forEach(v => {
+    v.bestVoice = findBestVoice(v);
+  });
+}
+
+function findBestVoice(villager) {
+  if (availableVoices.length === 0) return null;
+  const zhVoices = availableVoices.filter(v =>
+    v.lang.startsWith("zh-CN") || v.lang.startsWith("zh-TW") || v.lang.startsWith("zh-HK")
+  );
+  if (zhVoices.length === 0) {
+    return availableVoices[Math.floor(Math.random() * availableVoices.length)];
+  }
+  if (villager.voiceGender === "female") {
+    const female = zhVoices.filter(v =>
+      v.name.includes("Female") || v.name.includes("Mei") ||
+      v.name.includes("Ting") || v.name.includes("Xia")
+    );
+    if (female.length > 0) return female[Math.floor(Math.random() * female.length)];
+    return zhVoices[zhVoices.length - 1];
+  }
+  const male = zhVoices.filter(v =>
+    !v.name.includes("Female") && !v.name.includes("Mei") && !v.name.includes("Ting")
+  );
+  if (male.length > 0) {
+    if (villager.voiceAge === "old") {
+      return male[Math.floor(Math.random() * Math.min(3, male.length))];
+    }
+    return male[Math.min(2, male.length - 1)];
+  }
+  return zhVoices[0];
+}
+
+speechSynthesis.onvoiceschanged = initVoices;
+initVoices();
+
+function highlightChar(charIndex) {
+  const c1 = document.getElementById("charCard1");
+  const c2 = document.getElementById("charCard2");
+  const t1 = document.getElementById("speakingTag1");
+  const t2 = document.getElementById("speakingTag2");
+
+  c1.classList.remove("active", "inactive");
+  c2.classList.remove("active", "inactive");
+  t1.style.display = "none";
+  t2.style.display = "none";
+
+  if (charIndex === 1) {
+    c1.classList.add("active");
+    c2.classList.add("inactive");
+  } else {
+    c2.classList.add("active");
+    c1.classList.add("inactive");
+  }
+}
+
+function nextMessage() {
+  if (isAnimating) return;
+  if (msgIndex >= VILLAGERS.length) return;
+
+  isAnimating = true;
+  const v = VILLAGERS[msgIndex];
+
+  // 高亮对应人物卡片
+  highlightChar(v.charIndex);
+
+  // 进度点
+  document.getElementById(`dot${msgIndex}`).classList.add("current");
+
+  // 气泡切换
+  const bubbleText = document.getElementById("bubbleText");
+  const bubbleSpeaker = document.getElementById("bubbleSpeaker");
+
+  bubbleText.classList.add("switching");
+  bubbleSpeaker.classList.add("switching");
+
+  setTimeout(() => {
+    bubbleText.innerHTML = v.text;
+    bubbleSpeaker.textContent = "—— " + v.name;
+    bubbleText.classList.remove("switching");
+    bubbleSpeaker.classList.remove("switching");
+  }, 200);
+
+  // TTS
+  speakWithVoice(v);
+
+  // 提示
+  document.getElementById("hint").textContent =
+    msgIndex < VILLAGERS.length - 1
+      ? `👆 点击听取下一条 (${msgIndex + 1}/4)`
+      : `👆 点击听取最后一条`;
+
+  msgIndex++;
+
+  setTimeout(() => {
+    isAnimating = false;
+    updateDots();
+    if (msgIndex >= VILLAGERS.length) {
+      document.getElementById("hint").textContent = "✓ 全部村民反馈已收到";
+      document.getElementById("resetBtn").style.display = "inline-block";
+      document.getElementById("charCard1").classList.remove("active", "inactive");
+      document.getElementById("charCard2").classList.remove("active", "inactive");
+      document.getElementById("speakingTag1").style.display = "none";
+      document.getElementById("speakingTag2").style.display = "none";
+    }
+  }, 600);
+}
+
+function speakWithVoice(villager) {
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(villager.text);
+  utterance.lang = "zh-CN";
+  utterance.pitch = villager.pitch;
+  utterance.rate = villager.rate;
+  utterance.volume = villager.volume;
+  if (villager.bestVoice) utterance.voice = villager.bestVoice;
+
+  const speakingInd = document.getElementById("speakingInd");
+  speakingInd.classList.add("show");
+
+  utterance.onstart = () => {};
+  utterance.onend = () => {
+    speakingInd.classList.remove("show");
+  };
+  utterance.onerror = () => {
+    speakingInd.classList.remove("show");
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById(`dot${i}`);
+    dot.classList.remove("done", "current");
+    if (i < msgIndex) dot.classList.add("done");
+  }
+}
+
+function resetAll() {
+  msgIndex = 0;
+  isAnimating = false;
+  speechSynthesis.cancel();
+
+  document.getElementById("bubbleText").innerHTML = '<span class="placeholder-text">等待村民发言...</span>';
+  document.getElementById("bubbleSpeaker").textContent = "";
+  document.getElementById("speakingInd").classList.remove("show");
+  document.getElementById("hint").textContent = "👆 点击村民形象听取反馈";
+  document.getElementById("resetBtn").style.display = "none";
+
+  document.getElementById("charCard1").classList.remove("active", "inactive");
+  document.getElementById("charCard2").classList.remove("active", "inactive");
+  document.getElementById("speakingTag1").style.display = "none";
+  document.getElementById("speakingTag2").style.display = "none";
+
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`dot${i}`).classList.remove("done", "current");
+  }
+}
+</script>
+</body>
+</html>
