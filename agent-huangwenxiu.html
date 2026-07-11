@@ -264,8 +264,11 @@ body {
 <script>
 // ===== 后端API配置 =====
 // DeepSeek API密钥由服务端管理，前端不暴露
+var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? window.location.origin + '/api'
+  : 'https://rural-co-creation-api.onrender.com/api';
 var API_CONFIG = {
-  baseUrl: window.location.origin + '/api',
+  baseUrl: API_BASE,
   agentId: 'huangwenxiu'
 };
 
