@@ -834,7 +834,10 @@ body.bg-yunling .analysis-card.action { background: rgba(6,14,28,0.72); }
 </div>
 
 <script>
-// ===== 数据存储 =====
+// ===== API配置 =====
+var API_BASE = window.location.origin + '/api';
+
+// ===== 数据存储（localStorage作为本地缓存，服务器为数据主源）=====
 function loadSubs() {
   try { return JSON.parse(localStorage.getItem('villager_task_subs') || '[]'); }
   catch(e) { return []; }
@@ -852,6 +855,24 @@ function loadActionSubs() {
   catch(e) { return []; }
 }
 function saveActionSubs(subs) { localStorage.setItem('villager_action_subs', JSON.stringify(subs)); }
+
+// 从服务器同步数据
+function syncFromServer() {
+  var tasks = ['task1', 'task2', 'task3'];
+  return Promise.all(tasks.map(function(t) {
+    return fetch(API_BASE + '/tasks/submissions/' + t)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.code === 0 && d.data && d.data.length > 0) {
+          if (t === 'task1') saveSubs(d.data);
+          else if (t === 'task2') saveGeoSubs(d.data);
+          else saveActionSubs(d.data);
+        }
+        return d;
+      })
+      .catch(function() { return []; });
+  }));
+}
 
 // ===== 预设示例数据 — 任务一 =====
 var SAMPLE_SUBS = [
@@ -970,7 +991,7 @@ var SAMPLE_ACTION_SUBS = [
     var sub = SAMPLE_SUBS[s];
     var items = [];
     for (var j = 0; j < 6; j++) {
-      var result = analyzeTask1(j, sub.answers[j]);
+      var result = fallbackAnalyzeTask1(j, sub.answers[j]);
       items.push({ qIndex: j, answer: sub.answers[j], score: result.score, feedback: result.feedback });
     }
     sub.analysis = items;
@@ -979,7 +1000,7 @@ var SAMPLE_ACTION_SUBS = [
     var gsub = SAMPLE_GEO_SUBS[g];
     var gitems = [];
     for (var k = 0; k < 4; k++) {
-      var gresult = analyzeGeo(k, gsub.answers[k]);
+      var gresult = fallbackAnalyzeTask2(k, gsub.answers[k]);
       gitems.push({ qIndex: k, answer: gsub.answers[k], score: gresult.score, feedback: gresult.feedback });
     }
     gsub.analysis = gitems;
@@ -988,7 +1009,7 @@ var SAMPLE_ACTION_SUBS = [
     var asub = SAMPLE_ACTION_SUBS[a];
     var aitems = [];
     for (var b = 0; b < 5; b++) {
-      var aresult = analyzeTask3(b, asub.answers[b]);
+      var aresult = fallbackAnalyzeTask3(b, asub.answers[b]);
       aitems.push({ qIndex: b, answer: asub.answers[b], score: aresult.score, feedback: aresult.feedback });
     }
     asub.analysis = aitems;
@@ -1033,8 +1054,8 @@ function switchPage(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== AI 分析引擎 — 任务一 =====
-function analyzeTask1(qIndex, text) {
+// ===== 本地关键词评分引擎（服务器AI不可用时的兜底）=====
+function fallbackAnalyzeTask1(qIndex, text) {
   if (!text || text.length < 10) return { score: 0, feedback: '回答过于简略，需要补充更多内容。' };
   var scores = { score: 0, feedback: '' };
   var len = text.length;
@@ -1050,8 +1071,7 @@ function analyzeTask1(qIndex, text) {
   return scores;
 }
 
-// ===== AI 分析引擎 — 任务二（地理诊断） =====
-function analyzeGeo(qIndex, text) {
+function fallbackAnalyzeTask2(qIndex, text) {
   if (!text || text.length < 15) return { score: 0, feedback: '回答过于简略，请结合地理智库数据做更详细的分析。' };
   var geoScore = { score: 0, feedback: '' };
   var len = text.length;
@@ -1090,8 +1110,7 @@ function analyzeGeo(qIndex, text) {
   return geoScore;
 }
 
-// ===== AI 分析引擎 — 任务三（行动方案） =====
-function analyzeTask3(qIndex, text) {
+function fallbackAnalyzeTask3(qIndex, text) {
   if (!text || text.length < 20) return { score: 0, feedback: '回答过于简略，需要结合云岭村实际情况展开详细论述。' };
   var actScore = { score: 0, feedback: '' };
   var len = text.length;
@@ -1154,7 +1173,7 @@ function scoreText(s) {
   return '待提升';
 }
 
-// ===== 提交任务一 =====
+// ===== 提交任务一（服务器AI评分 + 本地兜底）=====
 function submitTask1() {
   var gn = document.getElementById('groupName').value.trim();
   var mb = document.getElementById('members').value.trim();
@@ -1166,19 +1185,44 @@ function submitTask1() {
     if (!val) { alert('请填写问题' + i); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 6; j++) {
-    var result = analyzeTask1(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 6);
+
+  // 调用服务器AI分析
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task1', group_name: gn, members: mb, answers: answers })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) {
+      analysisItems = d.data.analysis;
+      avg = d.data.total_score;
+      scores = d.data.scores;
+    } else {
+      throw new Error('API failed');
+    }
+    finishTask1Submit(gn, mb, answers, analysisItems, avg, scores);
+  })
+  .catch(function() {
+    // 服务器不可用，使用本地关键词评分兜底
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 6; j++) {
+      var fr = fallbackAnalyzeTask1(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    var avg = Math.round(totalScore / 6);
+    var scores = analysisItems.map(function(a) { return a.score; });
+    finishTask1Submit(gn, mb, answers, analysisItems, avg, scores);
+  });
+}
+
+function finishTask1Submit(gn, mb, answers, analysisItems, avg, scores) {
   var subs = loadSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task1',
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task1',
     time: new Date().toLocaleString('zh-CN')
   });
   saveSubs(subs);
@@ -1194,7 +1238,7 @@ function submitTask1() {
   switchPage('result');
 }
 
-// ===== 提交任务二（地理诊断） =====
+// ===== 提交任务二（服务器AI评分 + 本地兜底）=====
 function submitGeo() {
   var gn = document.getElementById('geoGroupName').value.trim();
   var mb = document.getElementById('geoMembers').value.trim();
@@ -1206,19 +1250,36 @@ function submitGeo() {
     if (!val) { alert('请填写地理诊断问题' + i); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 4; j++) {
-    var result = analyzeGeo(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 4);
+
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task2', group_name: gn, members: mb, answers: answers })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) {
+      analysisItems = d.data.analysis; avg = d.data.total_score; scores = d.data.scores;
+    } else { throw new Error('API failed'); }
+    finishGeoSubmit(gn, mb, answers, analysisItems, avg, scores);
+  })
+  .catch(function() {
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 4; j++) {
+      var fr = fallbackAnalyzeTask2(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    finishGeoSubmit(gn, mb, answers, analysisItems, Math.round(totalScore / 4), analysisItems.map(function(a) { return a.score; }));
+  });
+}
+
+function finishGeoSubmit(gn, mb, answers, analysisItems, avg, scores) {
   var subs = loadGeoSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task2',
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task2',
     time: new Date().toLocaleString('zh-CN')
   });
   saveGeoSubs(subs);
@@ -1234,7 +1295,7 @@ function submitGeo() {
   switchPage('geoResult');
 }
 
-// ===== 提交任务三（行动方案） =====
+// ===== 提交任务三（服务器AI评分 + 本地兜底）=====
 function submitTask3() {
   var gn = document.getElementById('actGroupName').value.trim();
   var mb = document.getElementById('actMembers').value.trim();
@@ -1248,19 +1309,36 @@ function submitTask3() {
     if (!val) { alert('请填写模块' + i + '：' + moduleNames[i-1]); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 5; j++) {
-    var result = analyzeTask3(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 5);
+
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task3', group_name: gn, members: mb, answers: answers, self_score: selfScore })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) {
+      analysisItems = d.data.analysis; avg = d.data.total_score; scores = d.data.scores;
+    } else { throw new Error('API failed'); }
+    finishActionSubmit(gn, mb, answers, analysisItems, avg, scores, selfScore);
+  })
+  .catch(function() {
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 5; j++) {
+      var fr = fallbackAnalyzeTask3(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    finishActionSubmit(gn, mb, answers, analysisItems, Math.round(totalScore / 5), analysisItems.map(function(a) { return a.score; }), selfScore);
+  });
+}
+
+function finishActionSubmit(gn, mb, answers, analysisItems, avg, scores, selfScore) {
   var subs = loadActionSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task3', selfScore: selfScore,
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task3', selfScore: selfScore,
     time: new Date().toLocaleString('zh-CN')
   });
   saveActionSubs(subs);
@@ -1293,6 +1371,15 @@ function renderAnalysis(containerId, items, questions) {
 
 // ===== 仪表盘 =====
 function refreshDashboard() {
+  // 先从服务器同步最新数据，再渲染
+  syncFromServer().then(function() {
+    renderDashboardUI();
+  }).catch(function() {
+    renderDashboardUI();
+  });
+}
+
+function renderDashboardUI() {
   var subs = loadSubs();
   var geos = loadGeoSubs();
 
@@ -1644,6 +1731,8 @@ function clearAllData() {
     localStorage.removeItem('villager_task_subs');
     localStorage.removeItem('villager_geo_subs');
     localStorage.removeItem('villager_action_subs');
+    // 同步清空服务器
+    fetch(API_BASE + '/tasks/submissions', { method: 'DELETE' }).catch(function(){});
     refreshDashboard();
   }
 }

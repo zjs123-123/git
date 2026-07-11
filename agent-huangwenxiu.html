@@ -262,8 +262,17 @@ body {
 </div>
 
 <script>
-var COZE_CONFIG = { botId: "YOUR_COZE_BOT_ID", token: "YOUR_COZE_TOKEN", useLocal: true };
+// ===== 后端API配置 =====
+// DeepSeek API密钥由服务端管理，前端不暴露
+var API_CONFIG = {
+  baseUrl: window.location.origin + '/api',
+  agentId: 'huangwenxiu'
+};
 
+// 当前会话ID（sessionStorage持久化，刷新保留对话）
+var conversationId = sessionStorage.getItem('hw_conv_id') || null;
+
+// ===== 本地兜底回复（后端不可用时的最后防线）=====
 var LOCAL_RESPONSES = {};
 LOCAL_RESPONSES["群众"] = "如果连群众真正担心什么都不知道，再好的方案也推进不了。我在百坭村时，第一件事不是开会宣布政策，而是一家一户去走访。张家的孩子想上学但没钱，李家的柑橘卖不出去。不了解这些，你怎么帮他们？";
 LOCAL_RESPONSES["入户"] = "反复入户不是为了走过场。百坭村有195户贫困户，每一户情况都不同。有一户住在山上，我走了两个小时山路才到。他们一开始也不理我，我就帮他们扫院子、掰玉米。第三次去的时候，他们终于愿意跟我说实话了。";
@@ -281,19 +290,40 @@ function getLocalResponse(input) {
   return LOCAL_RESPONSES["default"];
 }
 
+// ===== AI回复（优先后端 → DeepSeek → 后端兜底 → 前端本地兜底）=====
 function getAIResponse(input) {
   return new Promise(function(resolve) {
-    if (COZE_CONFIG.useLocal) {
-      setTimeout(function() { resolve(getLocalResponse(input)); }, 800 + Math.random() * 1200);
-      return;
+    var body = JSON.stringify({
+      agent_id: API_CONFIG.agentId,
+      message: input
+    });
+    if (conversationId) {
+      body = JSON.stringify({
+        agent_id: API_CONFIG.agentId,
+        conversation_id: conversationId,
+        message: input
+      });
     }
-    fetch("https://api.coze.cn/v1/chat", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + COZE_CONFIG.token, "Content-Type": "application/json" },
-      body: JSON.stringify({ bot_id: COZE_CONFIG.botId, user_id: "student", messages: [{ role: "user", content: input }] })
-    }).then(function(r) { return r.json(); })
-      .then(function(d) { resolve(d.messages && d.messages[0] ? d.messages[0].content : "让我想想..."); })
-      .catch(function() { resolve("（AI系统连接中，请稍后再试）"); });
+
+    fetch(API_CONFIG.baseUrl + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.code === 0 && d.data) {
+        conversationId = d.data.conversation_id;
+        sessionStorage.setItem('hw_conv_id', conversationId);
+        resolve(d.data.reply + (d.data.fallback_used ? ' （本地回复）' : ''));
+      } else {
+        throw new Error(d.message || 'API error');
+      }
+    })
+    .catch(function() {
+      // 后端完全不可达，使用前端本地兜底
+      resolve(getLocalResponse(input) + ' （离线回复）');
+    });
   });
 }
 

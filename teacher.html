@@ -710,7 +710,10 @@ body.bg-yunling .analysis-card.action { background: rgba(6,14,28,0.72); }
 </div>
 
 <script>
-// ===== 数据存储 =====
+// ===== API配置 =====
+var API_BASE = window.location.origin + '/api';
+
+// ===== 数据存储（localStorage作为本地缓存，服务器为数据主源）=====
 function loadSubs() {
   try { return JSON.parse(localStorage.getItem('villager_task_subs') || '[]'); }
   catch(e) { return []; }
@@ -728,6 +731,24 @@ function loadActionSubs() {
   catch(e) { return []; }
 }
 function saveActionSubs(subs) { localStorage.setItem('villager_action_subs', JSON.stringify(subs)); }
+
+// 从服务器同步数据
+function syncFromServer() {
+  var tasks = ['task1', 'task2', 'task3'];
+  return Promise.all(tasks.map(function(t) {
+    return fetch(API_BASE + '/tasks/submissions/' + t)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.code === 0 && d.data && d.data.length > 0) {
+          if (t === 'task1') saveSubs(d.data);
+          else if (t === 'task2') saveGeoSubs(d.data);
+          else saveActionSubs(d.data);
+        }
+        return d;
+      })
+      .catch(function() { return []; });
+  }));
+}
 
 // ===== 预设示例数据 — 任务一 =====
 var SAMPLE_SUBS = [
@@ -1166,6 +1187,10 @@ function renderAnalysis(containerId, items, questions) {
 
 // ===== 仪表盘 =====
 function refreshDashboard() {
+  syncFromServer().then(function() { renderDashboardUI(); }).catch(function() { renderDashboardUI(); });
+}
+
+function renderDashboardUI() {
   var subs = loadSubs();
   var geos = loadGeoSubs();
 
@@ -1665,20 +1690,30 @@ function clearAllData() {
     localStorage.removeItem('villager_task_subs');
     localStorage.removeItem('villager_geo_subs');
     localStorage.removeItem('villager_action_subs');
+    fetch(API_BASE + '/tasks/submissions', { method: 'DELETE' }).catch(function(){});
     refreshDashboard();
   }
 }
 
 // ===== 初始化 =====
 window.addEventListener('load', function() {
-  var existing = loadSubs();
-  if (existing.length === 0) saveSubs(SAMPLE_SUBS);
-  // 任务二格式已更新为4题，旧数据不兼容，直接替换为示例数据
-  saveGeoSubs(SAMPLE_GEO_SUBS);
-  // 任务三：加载示例数据
-  var existingActions = loadActionSubs();
-  if (existingActions.length === 0) saveActionSubs(SAMPLE_ACTION_SUBS);
-  refreshDashboard();
+  syncFromServer().then(function() {
+    var existing = loadSubs();
+    if (existing.length === 0) saveSubs(SAMPLE_SUBS);
+    var existingGeo = loadGeoSubs();
+    if (existingGeo.length === 0) saveGeoSubs(SAMPLE_GEO_SUBS);
+    var existingActions = loadActionSubs();
+    if (existingActions.length === 0) saveActionSubs(SAMPLE_ACTION_SUBS);
+    refreshDashboard();
+  }).catch(function() {
+    var existing = loadSubs();
+    if (existing.length === 0) saveSubs(SAMPLE_SUBS);
+    var existingGeo = loadGeoSubs();
+    if (existingGeo.length === 0) saveGeoSubs(SAMPLE_GEO_SUBS);
+    var existingActions = loadActionSubs();
+    if (existingActions.length === 0) saveActionSubs(SAMPLE_ACTION_SUBS);
+    refreshDashboard();
+  });
 });
 </script>
 </body>

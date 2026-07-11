@@ -842,7 +842,10 @@ body.bg-yunling .analysis-card.action { background: rgba(6,14,28,0.72); }
 </div>
 
 <script>
-// ===== 数据存储 =====
+// ===== API配置 =====
+var API_BASE = window.location.origin + '/api';
+
+// ===== 数据存储（localStorage作为本地缓存，服务器为数据主源）=====
 function loadSubs() {
   try { return JSON.parse(localStorage.getItem('villager_task_subs') || '[]'); }
   catch(e) { return []; }
@@ -978,7 +981,7 @@ var SAMPLE_ACTION_SUBS = [
     var sub = SAMPLE_SUBS[s];
     var items = [];
     for (var j = 0; j < 6; j++) {
-      var result = analyzeTask1(j, sub.answers[j]);
+      var result = fallbackAnalyzeTask1(j, sub.answers[j]);
       items.push({ qIndex: j, answer: sub.answers[j], score: result.score, feedback: result.feedback });
     }
     sub.analysis = items;
@@ -987,7 +990,7 @@ var SAMPLE_ACTION_SUBS = [
     var gsub = SAMPLE_GEO_SUBS[g];
     var gitems = [];
     for (var k = 0; k < 4; k++) {
-      var gresult = analyzeGeo(k, gsub.answers[k]);
+      var gresult = fallbackAnalyzeTask2(k, gsub.answers[k]);
       gitems.push({ qIndex: k, answer: gsub.answers[k], score: gresult.score, feedback: gresult.feedback });
     }
     gsub.analysis = gitems;
@@ -996,7 +999,7 @@ var SAMPLE_ACTION_SUBS = [
     var asub = SAMPLE_ACTION_SUBS[a];
     var aitems = [];
     for (var b = 0; b < 5; b++) {
-      var aresult = analyzeTask3(b, asub.answers[b]);
+      var aresult = fallbackAnalyzeTask3(b, asub.answers[b]);
       aitems.push({ qIndex: b, answer: asub.answers[b], score: aresult.score, feedback: aresult.feedback });
     }
     asub.analysis = aitems;
@@ -1039,8 +1042,7 @@ function switchPage(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== AI 分析引擎 — 任务一 =====
-function analyzeTask1(qIndex, text) {
+function fallbackAnalyzeTask1(qIndex, text) {
   if (!text || text.length < 10) return { score: 0, feedback: '回答过于简略，需要补充更多内容。' };
   var scores = { score: 0, feedback: '' };
   var len = text.length;
@@ -1056,8 +1058,7 @@ function analyzeTask1(qIndex, text) {
   return scores;
 }
 
-// ===== AI 分析引擎 — 任务二（地理诊断） =====
-function analyzeGeo(qIndex, text) {
+function fallbackAnalyzeTask2(qIndex, text) {
   if (!text || text.length < 15) return { score: 0, feedback: '回答过于简略，请结合地理智库数据做更详细的分析。' };
   var geoScore = { score: 0, feedback: '' };
   var len = text.length;
@@ -1096,8 +1097,7 @@ function analyzeGeo(qIndex, text) {
   return geoScore;
 }
 
-// ===== AI 分析引擎 — 任务三（行动方案） =====
-function analyzeTask3(qIndex, text) {
+function fallbackAnalyzeTask3(qIndex, text) {
   if (!text || text.length < 20) return { score: 0, feedback: '回答过于简略，需要结合云岭村实际情况展开详细论述。' };
   var actScore = { score: 0, feedback: '' };
   var len = text.length;
@@ -1160,7 +1160,7 @@ function scoreText(s) {
   return '待提升';
 }
 
-// ===== 提交任务一 =====
+// ===== 提交任务一（服务器AI评分 + 本地兜底）=====
 function submitTask1() {
   var gn = document.getElementById('groupName').value.trim();
   var mb = document.getElementById('members').value.trim();
@@ -1172,19 +1172,36 @@ function submitTask1() {
     if (!val) { alert('请填写问题' + i); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 6; j++) {
-    var result = analyzeTask1(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 6);
+
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task1', group_name: gn, members: mb, answers: answers })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) {
+      analysisItems = d.data.analysis; avg = d.data.total_score; scores = d.data.scores;
+    } else { throw new Error('API failed'); }
+    finishTask1Submit(gn, mb, answers, analysisItems, avg, scores);
+  })
+  .catch(function() {
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 6; j++) {
+      var fr = fallbackAnalyzeTask1(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    finishTask1Submit(gn, mb, answers, analysisItems, Math.round(totalScore / 6), analysisItems.map(function(a) { return a.score; }));
+  });
+}
+
+function finishTask1Submit(gn, mb, answers, analysisItems, avg, scores) {
   var subs = loadSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task1',
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task1',
     time: new Date().toLocaleString('zh-CN')
   });
   saveSubs(subs);
@@ -1200,7 +1217,7 @@ function submitTask1() {
   switchPage('result');
 }
 
-// ===== 提交任务二（地理诊断） =====
+// ===== 提交任务二（服务器AI评分 + 本地兜底）=====
 function submitGeo() {
   var gn = document.getElementById('geoGroupName').value.trim();
   var mb = document.getElementById('geoMembers').value.trim();
@@ -1212,35 +1229,48 @@ function submitGeo() {
     if (!val) { alert('请填写地理诊断问题' + i); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 4; j++) {
-    var result = analyzeGeo(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 4);
+
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task2', group_name: gn, members: mb, answers: answers })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) { analysisItems = d.data.analysis; avg = d.data.total_score; scores = d.data.scores; }
+    else { throw new Error('API failed'); }
+    finishGeoSubmit(gn, mb, answers, analysisItems, avg, scores);
+  })
+  .catch(function() {
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 4; j++) {
+      var fr = fallbackAnalyzeTask2(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    finishGeoSubmit(gn, mb, answers, analysisItems, Math.round(totalScore / 4), analysisItems.map(function(a) { return a.score; }));
+  });
+}
+
+function finishGeoSubmit(gn, mb, answers, analysisItems, avg, scores) {
   var subs = loadGeoSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task2',
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task2',
     time: new Date().toLocaleString('zh-CN')
   });
   saveGeoSubs(subs);
-
   document.getElementById('geoResultGroupInfo').textContent = gn + ' | ' + mb;
   document.getElementById('geoOverallScoreDisplay').textContent = avg;
   var geoQuestions = ['云岭村面临哪些自然条件限制', '地形如何影响交通与产业', '为什么山区乡村发展风险更高', '自然环境与乡村发展之间的关系'];
   renderAnalysis('geoAnalysisContent', analysisItems, geoQuestions);
-
   document.getElementById('geoGroupName').value = '';
   document.getElementById('geoMembers').value = '';
   for (var l = 1; l <= 4; l++) document.getElementById('gq' + l).value = '';
   switchPage('geoResult');
 }
 
-// ===== 提交任务三（行动方案） =====
+// ===== 提交任务三（服务器AI评分 + 本地兜底）=====
 function submitTask3() {
   var gn = document.getElementById('actGroupName').value.trim();
   var mb = document.getElementById('actMembers').value.trim();
@@ -1254,28 +1284,41 @@ function submitTask3() {
     if (!val) { alert('请填写模块' + i + '：' + moduleNames[i-1]); return; }
     answers.push(val);
   }
-  var totalScore = 0;
-  var analysisItems = [];
-  for (var j = 0; j < 5; j++) {
-    var result = analyzeTask3(j, answers[j]);
-    totalScore += result.score;
-    analysisItems.push({ qIndex: j, answer: answers[j], score: result.score, feedback: result.feedback });
-  }
-  var avg = Math.round(totalScore / 5);
+
+  fetch(API_BASE + '/tasks/submit', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task_type: 'task3', group_name: gn, members: mb, answers: answers, self_score: selfScore })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var analysisItems, avg, scores;
+    if (d.code === 0 && d.data) { analysisItems = d.data.analysis; avg = d.data.total_score; scores = d.data.scores; }
+    else { throw new Error('API failed'); }
+    finishActionSubmit(gn, mb, answers, analysisItems, avg, scores, selfScore);
+  })
+  .catch(function() {
+    var analysisItems = [], totalScore = 0;
+    for (var j = 0; j < 5; j++) {
+      var fr = fallbackAnalyzeTask3(j, answers[j]);
+      totalScore += fr.score;
+      analysisItems.push({ qIndex: j, answer: answers[j], score: fr.score, feedback: fr.feedback + ' [离线评分]' });
+    }
+    finishActionSubmit(gn, mb, answers, analysisItems, Math.round(totalScore / 5), analysisItems.map(function(a) { return a.score; }), selfScore);
+  });
+}
+
+function finishActionSubmit(gn, mb, answers, analysisItems, avg, scores, selfScore) {
   var subs = loadActionSubs();
-  subs.push({
+  subs.unshift({
     id: Date.now(), groupName: gn, members: mb, answers: answers,
-    scores: analysisItems.map(function(a) { return a.score; }),
-    totalScore: avg, analysis: analysisItems, task: 'task3', selfScore: selfScore,
+    scores: scores, totalScore: avg, analysis: analysisItems, task: 'task3', selfScore: selfScore,
     time: new Date().toLocaleString('zh-CN')
   });
   saveActionSubs(subs);
-
   document.getElementById('actionResultGroupInfo').textContent = gn + ' | ' + mb + ' | 自评：' + selfScore + '分';
   document.getElementById('actionOverallScoreDisplay').textContent = avg;
   var actionQuestions = ['群众需求分析', '地理条件分析', '产业发展路径', '群众参与方式', '可持续发展考虑'];
   renderAnalysis('actionAnalysisContent', analysisItems, actionQuestions);
-
   document.getElementById('actGroupName').value = '';
   document.getElementById('actMembers').value = '';
   for (var l = 1; l <= 5; l++) document.getElementById('aq' + l).value = '';
@@ -1650,7 +1693,8 @@ function clearAllData() {
     localStorage.removeItem('villager_task_subs');
     localStorage.removeItem('villager_geo_subs');
     localStorage.removeItem('villager_action_subs');
-    refreshDashboard();
+    fetch(API_BASE + '/tasks/submissions', { method: 'DELETE' }).catch(function(){});
+    if (typeof refreshDashboard === 'function') refreshDashboard();
   }
 }
 
@@ -1658,9 +1702,8 @@ function clearAllData() {
 window.addEventListener('load', function() {
   var existing = loadSubs();
   if (existing.length === 0) saveSubs(SAMPLE_SUBS);
-  // 任务二格式已更新为4题，旧数据不兼容，直接替换为示例数据
-  saveGeoSubs(SAMPLE_GEO_SUBS);
-  // 任务三：加载示例数据
+  var existingGeo = loadGeoSubs();
+  if (existingGeo.length === 0) saveGeoSubs(SAMPLE_GEO_SUBS);
   var existingActions = loadActionSubs();
   if (existingActions.length === 0) saveActionSubs(SAMPLE_ACTION_SUBS);
 });

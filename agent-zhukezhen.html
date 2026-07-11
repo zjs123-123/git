@@ -268,8 +268,17 @@ body {
 </div>
 
 <script>
-var COZE_CONFIG = { botId: "YOUR_COZE_BOT_ID", token: "YOUR_COZE_TOKEN", useLocal: true };
+// ===== 后端API配置 =====
+// DeepSeek API密钥由服务端管理，前端不暴露
+var API_CONFIG = {
+  baseUrl: window.location.origin + '/api',
+  agentId: 'zhukezhen'
+};
 
+// 当前会话ID（sessionStorage持久化，刷新保留对话）
+var conversationId = sessionStorage.getItem('zk_conv_id') || null;
+
+// ===== 本地兜底回复（后端不可用时的最后防线）=====
 var LOCAL_RESPONSES = {};
 LOCAL_RESPONSES["地形"] = "云岭村海拔620至940米，平均坡度23度，山地占82%。这种地形对柑橘的影响是双面的：有利的是坡地排水好、昼夜温差大，利于糖分积累；不利的是坡耕地破碎、机械化难、水土易流失。尤其15度以上坡地若无梯田改造，长期种植会导致肥力下降。";
 LOCAL_RESPONSES["喀斯特"] = "喀斯特地貌的核心问题是岩溶裂隙发育，地表水极易渗漏到地下深处。云岭村的红壤虽然适合柑橘，但保水能力差。加上降雨集中在5至9月，占了全年72%，到了秋冬柑橘需水关键期反而干旱。解决之道是修建蓄水池和滴灌系统，把雨季的水留住。";
@@ -288,19 +297,40 @@ function getLocalResponse(input) {
   return LOCAL_RESPONSES["default"];
 }
 
+// ===== AI回复（优先后端 → DeepSeek → 后端兜底 → 前端本地兜底）=====
 function getAIResponse(input) {
   return new Promise(function(resolve) {
-    if (COZE_CONFIG.useLocal) {
-      setTimeout(function() { resolve(getLocalResponse(input)); }, 800 + Math.random() * 1200);
-      return;
+    var body = JSON.stringify({
+      agent_id: API_CONFIG.agentId,
+      message: input
+    });
+    if (conversationId) {
+      body = JSON.stringify({
+        agent_id: API_CONFIG.agentId,
+        conversation_id: conversationId,
+        message: input
+      });
     }
-    fetch("https://api.coze.cn/v1/chat", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + COZE_CONFIG.token, "Content-Type": "application/json" },
-      body: JSON.stringify({ bot_id: COZE_CONFIG.botId, user_id: "student", messages: [{ role: "user", content: input }] })
-    }).then(function(r) { return r.json(); })
-      .then(function(d) { resolve(d.messages && d.messages[0] ? d.messages[0].content : "让我想想..."); })
-      .catch(function() { resolve("（AI系统连接中，请稍后再试）"); });
+
+    fetch(API_CONFIG.baseUrl + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.code === 0 && d.data) {
+        conversationId = d.data.conversation_id;
+        sessionStorage.setItem('zk_conv_id', conversationId);
+        resolve(d.data.reply + (d.data.fallback_used ? ' （本地回复）' : ''));
+      } else {
+        throw new Error(d.message || 'API error');
+      }
+    })
+    .catch(function() {
+      // 后端完全不可达，使用前端本地兜底
+      resolve(getLocalResponse(input) + ' （离线回复）');
+    });
   });
 }
 
