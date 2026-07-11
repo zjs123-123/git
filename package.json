@@ -1,0 +1,7 @@
+{
+  "name": "rural-co-creation-api",
+  "scripts": {
+    "start": "cd server && npm install && node server.js",
+    "build": "cd server && npm install"
+  }
+}
