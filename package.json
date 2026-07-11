@@ -1,7 +1,11 @@
 {
   "name": "rural-co-creation-api",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "start": "cd server && npm install && node server.js",
-    "build": "cd server && npm install"
+    "postinstall": "cd server && npm install",
+    "start": "node server/server.js",
+    "build": ""
   }
 }
